@@ -20,23 +20,13 @@ import java.util.stream.StreamSupport;
 @Service
 @AllArgsConstructor(onConstructor = @__(@Autowired))
 public class ResourceServiceImpl implements ResourceService {
-    private static final String[] ALLOWED_CONTENT_TYPES = {"audio/mpeg"};
 
     private final ResourceRepository resourceRepository;
 
     @Override
-    public Integer storeFile(MultipartFile file) {
+    public Integer storeFile(byte[] data) {
 
-        validateFile(file);
-
-        byte[] bytes;
-        try {
-            bytes = file.getBytes();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        Resource savedResource = resourceRepository.save(new Resource(bytes));
-
+        Resource savedResource = resourceRepository.save(new Resource(data));
 
         return savedResource.getId();
     }
@@ -59,16 +49,4 @@ public class ResourceServiceImpl implements ResourceService {
         return existedIds;
     }
 
-    private static void validateFile(MultipartFile file) {
-        if (file == null) {
-            throw new IllegalResourceException("File doesn't exist");
-        }
-        if (file.isEmpty()) {
-            throw new IllegalResourceException("File is empty");
-        }
-        boolean isNotSupported = Arrays.stream(ALLOWED_CONTENT_TYPES).noneMatch(x -> x.equals(file.getContentType()));
-        if (isNotSupported) {
-            throw new IllegalResourceException("Not valid content type");
-        }
-    }
 }

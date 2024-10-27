@@ -10,7 +10,9 @@
         <version>3.3.5</version>
     </parent>
 
+    <groupId>org.example</groupId>
     <artifactId>resource-service</artifactId>
+    <version>0.1-SNAPSHOT</version>
 
     <properties>
         <maven.compiler.source>22</maven.compiler.source>

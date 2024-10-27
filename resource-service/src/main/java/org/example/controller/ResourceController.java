@@ -2,7 +2,7 @@ package org.example.controller;
 
 
 import lombok.AllArgsConstructor;
-import org.example.controller.dto.Identifiable;
+import org.example.service.rest.dto.Identifiable;
 import org.example.service.rest.ResourceRestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;

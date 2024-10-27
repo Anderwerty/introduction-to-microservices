@@ -5,7 +5,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 public interface ResourceService {
-    Integer storeFile(MultipartFile file);
+    Integer storeFile(byte[] data);
 
     byte[] getAudioData(Integer id);
 

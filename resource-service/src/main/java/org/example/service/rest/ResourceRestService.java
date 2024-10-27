@@ -1,6 +1,6 @@
 package org.example.service.rest;
 
-import org.example.controller.dto.Identifiable;
+import org.example.service.rest.dto.Identifiable;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
