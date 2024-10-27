@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.example.controller.dto.Identifiable;
 import org.example.service.core.ResourceService;
-import org.example.service.exception.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,6 +15,8 @@ import java.util.List;
 @Service
 @AllArgsConstructor(onConstructor = @__(@Autowired))
 public class ResourceRestServiceImpl implements ResourceRestService {
+
+    private static final int IDS_PARAMETER_LENGTH_LIMIT = 200;
 
     private final ResourceService resourceService;
 
@@ -30,26 +31,35 @@ public class ResourceRestServiceImpl implements ResourceRestService {
         try {
             Integer identifier = Integer.valueOf(id);
             return resourceService.getAudioData(identifier);
-        } catch (NumberFormatException e){
+        } catch (NumberFormatException e) {
             throw new IllegalArgumentException(String.format("Id [%s] is not int type", id), e);
         }
     }
 
     @Override
     public List<Integer> deleteResources(String idsParameter) {
-        if(idsParameter == null || idsParameter.isEmpty()) {
+        if (idsParameter == null || idsParameter.isEmpty()) {
             return Collections.emptyList();
         }
+
+        validateIdsParameter(idsParameter);
 
         List<Integer> ids = Arrays.stream(idsParameter.split(",")).map(String::trim)
                 .filter(NumberUtils::isCreatable)
                 .map(Integer::valueOf)
                 .toList();
-        if(ids.isEmpty()){
+        if (ids.isEmpty()) {
             return Collections.emptyList();
         }
 
         return resourceService.deleteAll(ids);
+    }
+
+    private void validateIdsParameter(String idsParameter) {
+        int length = idsParameter.length();
+        if (length >= IDS_PARAMETER_LENGTH_LIMIT) {
+            throw new IllegalArgumentException(String.format("Too long ids parameter length [%d]", length));
+        }
     }
 
 }
