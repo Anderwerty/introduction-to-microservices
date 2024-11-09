@@ -1,17 +1,15 @@
 package org.example.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Data;
 
 @Entity
-@Table(name = "metadata")
+@Table(name = "song_metadata")
 @Data
 public class SongMetaData {
 
     @Id
+    @GeneratedValue(strategy=GenerationType.IDENTITY)
     private Integer id;
 
     @Column(name = "name")
@@ -29,6 +27,6 @@ public class SongMetaData {
     @Column(name ="resource_Id")
     private Integer resourceId;
 
-    @Column
+    @Column(name = "year_creation")
     private Integer year;
 }
