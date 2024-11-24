@@ -4,6 +4,6 @@ USE resources_db;
 
 CREATE TABLE resources (
     id int NOT NULL AUTO_INCREMENT,
-    file BLOB,
+    file LONGBLOB,
     PRIMARY KEY (id)
 );

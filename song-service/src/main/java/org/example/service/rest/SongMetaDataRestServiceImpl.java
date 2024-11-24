@@ -1,7 +1,7 @@
 package org.example.service.rest;
 
 import org.apache.commons.lang3.math.NumberUtils;
-import org.example.entity.SongMetaData;
+import org.example.entity.SongMetadata;
 import org.example.service.core.SongMetaDataService;
 import org.example.service.mapper.SongMetaDataMapper;
 import org.example.service.rest.dto.Identifiable;
@@ -30,7 +30,7 @@ public class SongMetaDataRestServiceImpl implements SongMetaDataRestService {
 
     @Override
     public Identifiable<Integer> storeMetaData(SongMetaDataDto songMetaDataDto) {
-        SongMetaData entity = songMetaDataMapper.mapToEntity(songMetaDataDto);
+        SongMetadata entity = songMetaDataMapper.mapToEntity(songMetaDataDto);
         return new Identifiable<>(songMetaDataService.storeMetaData(entity));
     }
 
@@ -38,7 +38,7 @@ public class SongMetaDataRestServiceImpl implements SongMetaDataRestService {
     public SongMetaDataDto getMetaData(String id) {
         try {
             Integer identifier = Integer.valueOf(id);
-            SongMetaData metaData = songMetaDataService.getMetaData(identifier);
+            SongMetadata metaData = songMetaDataService.getMetaData(identifier);
             return songMetaDataMapper.mapToDto(metaData);
         } catch (NumberFormatException e){
             throw new IllegalArgumentException(String.format("Id [%s] is not int type", id), e);

@@ -11,15 +11,15 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class SongMetaDataDto {
 
+    private String id;
+
     private String name;
 
     private String artist;
 
     private String album;
 
-    private String length;
-
-    private Integer resourceId;
+    private String duration;
 
     private Integer year;
 }

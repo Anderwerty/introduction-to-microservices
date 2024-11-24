@@ -4,16 +4,16 @@ import lombok.AllArgsConstructor;
 import org.example.service.rest.SongMetaDataRestService;
 import org.example.service.rest.dto.Identifiable;
 import org.example.service.rest.dto.SongMetaDataDto;
+import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Controller
+@RestController
 @RequestMapping("/songs")
 @AllArgsConstructor(onConstructor = @__(@Autowired))
 public class SongMetaDataController {
@@ -22,7 +22,7 @@ public class SongMetaDataController {
 
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Identifiable<Integer>> createMetadata(@RequestBody SongMetaDataDto songMetaDataDto) {
-
+        Session
         HttpHeaders httpHeaders= new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
         return ResponseEntity.ok()

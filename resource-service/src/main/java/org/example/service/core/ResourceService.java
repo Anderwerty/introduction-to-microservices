@@ -1,7 +1,5 @@
 package org.example.service.core;
 
-import org.springframework.web.multipart.MultipartFile;
-
 import java.util.List;
 
 public interface ResourceService {

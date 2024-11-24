@@ -1,6 +1,6 @@
 package org.example.service.mapper;
 
-import org.example.entity.SongMetaData;
+import org.example.entity.SongMetadata;
 import org.example.service.rest.dto.SongMetaDataDto;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingConstants;
@@ -11,7 +11,7 @@ import org.mapstruct.ReportingPolicy;
         unmappedTargetPolicy = ReportingPolicy.IGNORE
 )public interface SongMetaDataMapper {
 
-    SongMetaData mapToEntity (SongMetaDataDto dto);
+    SongMetadata mapToEntity (SongMetaDataDto dto);
 
-    SongMetaDataDto mapToDto(SongMetaData entity);
+    SongMetaDataDto mapToDto(SongMetadata entity);
 }

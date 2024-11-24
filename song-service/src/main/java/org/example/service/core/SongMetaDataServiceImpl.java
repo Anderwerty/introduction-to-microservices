@@ -2,7 +2,7 @@ package org.example.service.core;
 
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
-import org.example.entity.SongMetaData;
+import org.example.entity.SongMetadata;
 import org.example.repository.MetadataRepository;
 import org.example.service.exception.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,14 +18,14 @@ public class SongMetaDataServiceImpl implements SongMetaDataService {
     private final MetadataRepository metadataRepository;
 
     @Override
-    public Integer storeMetaData(SongMetaData songMetaData) {
-        SongMetaData savedSongMetaData = metadataRepository.save(songMetaData);
+    public Integer storeMetaData(SongMetadata songMetaData) {
+        SongMetadata savedSongMetadata = metadataRepository.save(songMetaData);
 
-        return savedSongMetaData.getId();
+        return savedSongMetadata.getId();
     }
 
     @Override
-    public SongMetaData getMetaData(Integer id) {
+    public SongMetadata getMetaData(Integer id) {
         return metadataRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException(String.format("Song metadata with id=[%d] doesn't exist", id)));
     }
@@ -33,10 +33,10 @@ public class SongMetaDataServiceImpl implements SongMetaDataService {
     @Transactional
     @Override
     public List<Integer> deleteAll(List<Integer> ids) {
-        Iterable<SongMetaData> existedListSongMetaData = metadataRepository.findAllById(ids);
+        Iterable<SongMetadata> existedListSongMetaData = metadataRepository.findAllById(ids);
 
         List<Integer> existedIds = StreamSupport.stream(existedListSongMetaData.spliterator(), false)
-                .map(SongMetaData::getId)
+                .map(SongMetadata::getId)
                 .toList();
         metadataRepository.deleteAllById(existedIds);
 

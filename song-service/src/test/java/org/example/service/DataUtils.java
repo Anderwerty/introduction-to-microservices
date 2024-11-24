@@ -1,14 +1,14 @@
 package org.example.service;
 
 import lombok.experimental.UtilityClass;
-import org.example.entity.SongMetaData;
+import org.example.entity.SongMetadata;
 import org.example.service.rest.dto.SongMetaDataDto;
 
 @UtilityClass
 public class DataUtils {
 
-    public static SongMetaData initSongMetaData(Integer id) {
-        SongMetaData songMetaData = new SongMetaData();
+    public static SongMetadata initSongMetaData(Integer id) {
+        SongMetadata songMetaData = new SongMetadata();
         songMetaData.setId(id);
         songMetaData.setAlbum("Земля");
         songMetaData.setArtist("гурт Oкеан Ельзи, вокаліст Святослав Вакарчук");

@@ -1,24 +1,24 @@
 package org.example.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "resources")
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class Resource {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "file")
+    @Column(name = "file", columnDefinition = "LONGBLOB")
     @Lob
-    @ToString.Exclude
-    @EqualsAndHashCode.Exclude
     private byte[] file;
-
 
     public Resource(byte[] file) {
         this.file = file;

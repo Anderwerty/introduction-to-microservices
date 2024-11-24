@@ -1,14 +1,13 @@
 package org.example.service.core;
 
-import org.example.entity.SongMetaData;
-import org.springframework.web.multipart.MultipartFile;
+import org.example.entity.SongMetadata;
 
 import java.util.List;
 
 public interface SongMetaDataService {
-    Integer storeMetaData(SongMetaData songMetaData);
+    Integer storeMetaData(SongMetadata songMetaData);
 
-    SongMetaData getMetaData(Integer id);
+    SongMetadata getMetaData(Integer id);
 
     List<Integer> deleteAll(List<Integer> ids);
 }

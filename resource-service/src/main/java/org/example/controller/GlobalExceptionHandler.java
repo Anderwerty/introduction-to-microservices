@@ -1,5 +1,6 @@
 package org.example.controller;
 
+import org.example.service.exception.RuntimeIOException;
 import org.example.service.rest.dto.ErrorMessage;
 import org.example.service.exception.IllegalResourceException;
 import org.example.service.exception.ResourceNotFoundException;
@@ -11,7 +12,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler({IllegalResourceException.class, IllegalArgumentException.class})
+    @ExceptionHandler({IllegalResourceException.class, IllegalArgumentException.class, RuntimeIOException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorMessage notValidResource(RuntimeException exception) {
         return new ErrorMessage(HttpStatus.BAD_REQUEST.value(), exception.getMessage());
