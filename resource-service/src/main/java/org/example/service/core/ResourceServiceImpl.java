@@ -1,19 +1,13 @@
 package org.example.service.core;
 
-import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import org.example.entity.Resource;
 import org.example.repository.ResourceRepository;
-import org.example.service.exception.IllegalResourceException;
 import org.example.service.exception.ResourceNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.stream.StreamSupport;
 
@@ -37,7 +31,7 @@ public class ResourceServiceImpl implements ResourceService {
                 .orElseThrow(() -> new ResourceNotFoundException(String.format("Resources with id=[%d] doesn't exist", id)));
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     @Override
     public List<Integer> deleteAll(List<Integer> ids) {
         Iterable<Resource> existedResources = resourceRepository.findAllById(ids);

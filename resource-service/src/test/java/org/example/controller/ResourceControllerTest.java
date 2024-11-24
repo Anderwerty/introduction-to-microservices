@@ -4,20 +4,23 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.config.ApplicationConfig;
 import org.example.service.rest.dto.ErrorMessage;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
+
+import java.util.Map;
+import java.util.stream.Stream;
 
 import static org.example.DataUtils.FILE_BYTES;
 import static org.example.DataUtils.readFile;
 import static org.hamcrest.Matchers.*;
-import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -26,19 +29,21 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 class ResourceControllerTest {
     private static final String EXISTED_ID = "1";
     private static final String NOT_EXISTED_ID = "123";
-    private static final String INVALID_ID = "abc";
-
     @Autowired
     private MockMvc mockMvc;
 
     private final ObjectMapper mapper = new ObjectMapper();
 
+
     @Test
     void getResourceIfDataExist() throws Exception {
-        mockMvc.perform(get("/resources/" + EXISTED_ID).accept(MediaType.APPLICATION_JSON))
+        mockMvc.perform(get("/resources/" + EXISTED_ID)
+                        .contentType("audio/mpeg")
+                        .accept(MediaType.APPLICATION_JSON)
+                )
                 .andExpect(status().isOk())
                 .andExpect(content().bytes(FILE_BYTES))
-                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
+                .andExpect(content().contentTypeCompatibleWith("audio/mpeg"));
     }
 
     @Test
@@ -51,14 +56,20 @@ class ResourceControllerTest {
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
     }
 
-    @Test
-    void getSongMetaDataIfIdNotValid() throws Exception {
-        ErrorMessage errorMessage = new ErrorMessage(400, "Id [abc] is not int type");
-
-        mockMvc.perform(get("/resources/" + INVALID_ID).accept(MediaType.APPLICATION_JSON))
+    @ParameterizedTest
+    @MethodSource("idToErrorMessage")
+    void getSongMetaDataIfIdNotValid(String id, ErrorMessage errorMessage) throws Exception {
+        mockMvc.perform(get("/resources/" + id).contentType("audio/mpeg"))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().json(mapper.writeValueAsString(errorMessage)))
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
+    }
+
+    private static Stream<Arguments> idToErrorMessage() {
+        return Stream.of(
+                Arguments.of("abc", new ErrorMessage(400, "Validation error", Map.of("getBinaryAudioData.id", "Id [abc] is not int type"))),
+                Arguments.of("-1", new ErrorMessage(400, "Validation error", Map.of("getBinaryAudioData.id", "Id [-1] is not positive")))
+        );
     }
 
     @Test
@@ -70,7 +81,7 @@ class ResourceControllerTest {
                         .contentType("audio/mpeg")
                         .accept(MediaType.APPLICATION_JSON)
                 )
-                .andDo(MockMvcResultHandlers.print())
+//                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").isNumber())
                 .andExpect(jsonPath("$.id").value(greaterThan(2)));
@@ -79,14 +90,14 @@ class ResourceControllerTest {
     @Test
     void deleteShouldReturnListOfIds() throws Exception {
         mockMvc.perform(delete("/resources")
-                        .param("ids", "2,3,10")
+                        .param("id", "2,3,10")
                         .accept(MediaType.APPLICATION_JSON)
                         .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                 )
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$.[0]", is(2)))
-                .andExpect(jsonPath("$.[1]", is(3)));
+                .andExpect(jsonPath("$.ids", hasSize(2)))
+                .andExpect(jsonPath("$.ids.[0]", is(2)))
+                .andExpect(jsonPath("$.ids.[1]", is(3)));
     }
 
     @Test
@@ -96,7 +107,7 @@ class ResourceControllerTest {
                         .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                 )
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(0)));
+                .andExpect(jsonPath("$.ids", hasSize(0)));
     }
 
     @Test
@@ -105,7 +116,7 @@ class ResourceControllerTest {
 
         mockMvc.perform(delete("/resources")
                         .accept(MediaType.APPLICATION_JSON)
-                        .param("ids", "200,300,400,500,600,700,800,900")
+                        .param("id", "200,300,400,500,600,700,800,900")
                         .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                         .content(mapper.writeValueAsString(errorMessage))
                 )

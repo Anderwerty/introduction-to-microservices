@@ -2,7 +2,7 @@ package org.example.service.rest;
 
 import org.example.service.exception.IllegalResourceException;
 import org.example.service.rest.dto.Identifiable;
-import org.springframework.web.multipart.MultipartFile;
+import org.example.service.rest.dto.Identifiables;
 
 import java.util.List;
 
@@ -11,5 +11,5 @@ public interface ResourceRestService {
 
     byte[] getAudioData(String id);
 
-    List<Integer> deleteResources(String ids);
+    Identifiables<Integer> deleteResources(String ids);
 }

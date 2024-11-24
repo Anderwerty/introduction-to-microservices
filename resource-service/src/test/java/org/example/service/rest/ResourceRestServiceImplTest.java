@@ -4,12 +4,12 @@ import org.example.service.core.MetadataExtracter;
 import org.example.service.core.ResourceService;
 import org.example.service.exception.IllegalResourceException;
 import org.example.service.rest.dto.Identifiable;
-import org.junit.jupiter.api.Assertions;
+import org.example.service.rest.dto.Identifiables;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -74,23 +74,15 @@ class ResourceRestServiceImplTest {
         List<Integer> removedItemIds = List.of(1, 2);
         when(resourceService.deleteAll(ids)).thenReturn(removedItemIds);
 
-        List<Integer> actual = resourceRestService.deleteResources("1,2,3");
-        assertEquals(actual, removedItemIds);
+        Identifiables<Integer> actual = resourceRestService.deleteResources("1,2,3");
+        assertEquals(actual, new Identifiables<>(removedItemIds));
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"null", ""})
+    @NullAndEmptySource
     void deleteShouldReturnEmptyList(String ids) {
-        List<Integer> actual = resourceRestService.deleteResources(ids);
-        assertEquals(actual.size(), 0);
-    }
-
-    @Test
-    void deleteShouldThrowException() {
-
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> resourceRestService.deleteResources("11111,22222,33333,44444"));
-        assertEquals(exception.getMessage(), "Too long ids parameter length [23]");
+        Identifiables<Integer> actual = resourceRestService.deleteResources(ids);
+        assertEquals(actual.getIds().size(), 0);
     }
 
 }

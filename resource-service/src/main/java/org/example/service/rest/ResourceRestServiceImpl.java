@@ -5,13 +5,16 @@ import org.example.service.core.MetadataExtracter;
 import org.example.service.core.ResourceService;
 import org.example.service.exception.IllegalResourceException;
 import org.example.service.rest.dto.Identifiable;
+import org.example.service.rest.dto.Identifiables;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+@Transactional
 @Service
 public class ResourceRestServiceImpl implements ResourceRestService {
 
@@ -29,6 +32,7 @@ public class ResourceRestServiceImpl implements ResourceRestService {
         this.metadataExtracter = metadataExtracter;
         this.idsParameterLengthLimit = idsParameterLengthLimit;
     }
+
 
     @Override
     public Identifiable<Integer> storeFile(byte[] bytes) throws IllegalResourceException {
@@ -49,22 +53,19 @@ public class ResourceRestServiceImpl implements ResourceRestService {
     }
 
     @Override
-    public List<Integer> deleteResources(String idsParameter) {
+    public Identifiables<Integer> deleteResources(String idsParameter) {
         if (idsParameter == null || idsParameter.isEmpty()) {
-            return Collections.emptyList();
+            return new Identifiables<>(Collections.emptyList());
         }
 
-        validateIdsParameter(idsParameter);
-
-        List<Integer> ids = Arrays.stream(idsParameter.split(",")).map(String::trim)
-                .filter(NumberUtils::isCreatable)
+        List<Integer> ids = Arrays.stream(idsParameter.split(","))
                 .map(Integer::valueOf)
                 .toList();
         if (ids.isEmpty()) {
-            return Collections.emptyList();
+            return new Identifiables<>(Collections.emptyList());
         }
 
-        return resourceService.deleteAll(ids);
+        return  new Identifiables(resourceService.deleteAll(ids));
     }
 
     private void validateIdsParameter(String idsParameter) {
