@@ -4,6 +4,8 @@ import org.apache.tika.parser.mp3.Mp3Parser;
 import org.apache.tika.sax.BodyContentHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.client.ResponseErrorHandler;
+import org.springframework.web.client.RestTemplate;
 
 @Configuration
 public class ApplicationConfig {
@@ -16,5 +18,13 @@ public class ApplicationConfig {
     @Bean
     public BodyContentHandler bodyContentHandler(){
         return new BodyContentHandler();
+    }
+
+    @Bean
+    public RestTemplate restTemplate(ResponseErrorHandler responseErrorHandler){
+        RestTemplate restTemplate = new RestTemplate();
+        restTemplate.setErrorHandler(responseErrorHandler);
+
+        return restTemplate;
     }
 }

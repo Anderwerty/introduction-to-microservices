@@ -1,12 +1,13 @@
 package org.example.service.rest;
 
-import org.apache.commons.lang3.math.NumberUtils;
+import lombok.AllArgsConstructor;
+import org.example.service.client.SongClient;
 import org.example.service.core.MetadataExtracter;
 import org.example.service.core.ResourceService;
+import org.example.service.dto.SongMetadataDto;
 import org.example.service.exception.IllegalResourceException;
-import org.example.service.rest.dto.Identifiable;
-import org.example.service.rest.dto.Identifiables;
-import org.springframework.beans.factory.annotation.Value;
+import org.example.service.dto.Identifiable;
+import org.example.service.dto.Identifiables;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,6 +16,7 @@ import java.util.Collections;
 import java.util.List;
 
 @Transactional
+@AllArgsConstructor
 @Service
 public class ResourceRestServiceImpl implements ResourceRestService {
 
@@ -24,14 +26,7 @@ public class ResourceRestServiceImpl implements ResourceRestService {
 
     private final MetadataExtracter metadataExtracter;
 
-    private final int idsParameterLengthLimit;
-
-    public ResourceRestServiceImpl(ResourceService resourceService, MetadataExtracter metadataExtracter,
-                                   @Value("${ids.parameter.length.limit}") int idsParameterLengthLimit) {
-        this.resourceService = resourceService;
-        this.metadataExtracter = metadataExtracter;
-        this.idsParameterLengthLimit = idsParameterLengthLimit;
-    }
+    private final SongClient songClient;
 
 
     @Override
@@ -39,7 +34,10 @@ public class ResourceRestServiceImpl implements ResourceRestService {
 
         validateFile(bytes);
 
-        return new Identifiable<>(resourceService.storeFile(bytes));
+        Integer id = resourceService.storeFile(bytes);
+        SongMetadataDto songMetadataDto = metadataExtracter.extract(bytes, id);
+        songClient.saveSongMetadata(songMetadataDto);
+        return new Identifiable<>(id);
     }
 
     @Override
@@ -65,14 +63,10 @@ public class ResourceRestServiceImpl implements ResourceRestService {
             return new Identifiables<>(Collections.emptyList());
         }
 
-        return  new Identifiables(resourceService.deleteAll(ids));
-    }
+        List<Integer> deletedIds = resourceService.deleteAll(ids);
 
-    private void validateIdsParameter(String idsParameter) {
-        int length = idsParameter.length();
-        if (length >= idsParameterLengthLimit) {
-            throw new IllegalArgumentException(String.format("Too long ids parameter length [%d]", length));
-        }
+        songClient.deleteSongsMetadata(deletedIds);
+        return new Identifiables(deletedIds);
     }
 
     private void validateFile(byte[] bytes) {

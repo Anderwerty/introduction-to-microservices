@@ -1,10 +1,8 @@
 package org.example.service.rest;
 
 import org.example.service.exception.IllegalResourceException;
-import org.example.service.rest.dto.Identifiable;
-import org.example.service.rest.dto.Identifiables;
-
-import java.util.List;
+import org.example.service.dto.Identifiable;
+import org.example.service.dto.Identifiables;
 
 public interface ResourceRestService {
     Identifiable<Integer> storeFile(byte[] bytes) throws IllegalResourceException;

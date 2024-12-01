@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class SongMetaDataDto {
 
-    private String id;
+    private Integer id;
 
     private String name;
 
@@ -21,5 +21,5 @@ public class SongMetaDataDto {
 
     private String duration;
 
-    private Integer year;
+    private String year;
 }

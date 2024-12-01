@@ -3,11 +3,15 @@ package org.example.controller;
 import lombok.AllArgsConstructor;
 import org.example.service.rest.SongMetaDataRestService;
 import org.example.service.rest.dto.Identifiable;
+import org.example.service.rest.dto.Identifiables;
 import org.example.service.rest.dto.SongMetaDataDto;
+import org.example.service.validator.annotation.IdValidation;
+import org.example.service.validator.annotation.IdsValidation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,6 +19,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/songs")
 @AllArgsConstructor(onConstructor = @__(@Autowired))
+@Validated
 public class SongMetaDataController {
 
     private final SongMetaDataRestService songMetaDataRestService;
@@ -29,7 +34,7 @@ public class SongMetaDataController {
     }
 
     @GetMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<SongMetaDataDto> getSongMetaData(@PathVariable String id) {
+    public ResponseEntity<SongMetaDataDto> getSongMetaData(@PathVariable @IdValidation String id) {
         HttpHeaders httpHeaders= new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
         return ResponseEntity.ok()
@@ -38,7 +43,7 @@ public class SongMetaDataController {
     }
 
     @DeleteMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<Integer>> deleteResources(@RequestParam(required = false, name = "ids") String ids) {
+    public ResponseEntity<Identifiables<Integer>> deleteResources(@RequestParam(required = false, name = "id")  @IdsValidation String ids) {
         HttpHeaders httpHeaders= new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
         return ResponseEntity.ok()

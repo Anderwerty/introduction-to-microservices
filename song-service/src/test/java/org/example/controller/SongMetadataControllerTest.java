@@ -10,6 +10,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.Map;
+
 import static org.example.service.DataUtils.initSongMetaDataDto;
 import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -17,7 +19,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
-class SongMetadataControllerIT {
+class SongMetadataControllerTest {
     private static final String EXISTED_ID = "1";
     private static final String NOT_EXISTED_ID = "123";
     private static final String INVALID_ID = "abc";
@@ -31,7 +33,7 @@ class SongMetadataControllerIT {
     void getSongMetaDataIfDataExist() throws Exception {
         mockMvc.perform(get("/songs/" + EXISTED_ID).accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(content().json(mapper.writeValueAsString(initSongMetaDataDto())))
+                .andExpect(content().json(mapper.writeValueAsString(initSongMetaDataDto(1))))
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
     }
 
@@ -47,7 +49,8 @@ class SongMetadataControllerIT {
 
     @Test
     void getSongMetaDataIfIdNotValid() throws Exception {
-        ErrorMessage errorMessage = new ErrorMessage(400, "Id [abc] is not int type");
+        ErrorMessage errorMessage = new ErrorMessage(400, "Validation error",
+                Map.of("getSongMetaData.id","Id [abc] is not int type"));
 
         mockMvc.perform(get("/songs/" + INVALID_ID).accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
@@ -58,11 +61,12 @@ class SongMetadataControllerIT {
     @Test
     void createMetadata() throws Exception {
         SongMetaDataDto request = SongMetaDataDto.builder()
+                .id(3)
                 .artist("Антитіла")
                 .name("Фортеця Бахмут")
-                .length("3:35")
-                .year(2023)
-                .resourceId(3)
+                .album("")
+                .duration("3:35")
+                .year("2023")
                 .build();
 
         mockMvc.perform(post("/songs")
@@ -79,13 +83,13 @@ class SongMetadataControllerIT {
     @Test
     void deleteShouldReturnListOfIds() throws Exception {
         mockMvc.perform(delete("/songs")
-                        .param("ids", "2")
+                        .param("id", "2")
                         .accept(MediaType.APPLICATION_JSON)
                         .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                 )
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$.[0]", is(2)));
+                .andExpect(jsonPath("$.ids", hasSize(1)))
+                .andExpect(jsonPath("$.ids.[0]", is(2)));
     }
 
     @Test
@@ -95,7 +99,7 @@ class SongMetadataControllerIT {
                         .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                 )
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(0)));
+                .andExpect(jsonPath("$.ids", hasSize(0)));
     }
 
 
@@ -105,7 +109,7 @@ class SongMetadataControllerIT {
 
         mockMvc.perform(delete("/songs")
                         .accept(MediaType.APPLICATION_JSON)
-                        .param("ids", "200,300,400,500,600,700,800,900")
+                        .param("id", "200,300,400,500,600,700,800,900")
                         .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
                         .content(mapper.writeValueAsString(errorMessage))
                 )

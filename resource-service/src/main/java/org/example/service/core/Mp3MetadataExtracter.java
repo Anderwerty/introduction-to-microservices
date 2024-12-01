@@ -8,7 +8,7 @@ import org.apache.tika.metadata.XMPDM;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.mp3.Mp3Parser;
 import org.apache.tika.sax.BodyContentHandler;
-import org.example.service.rest.dto.SongMetadataDto;
+import org.example.service.dto.SongMetadataDto;
 import org.springframework.stereotype.Component;
 import org.xml.sax.SAXException;
 
@@ -36,7 +36,7 @@ public class Mp3MetadataExtracter implements MetadataExtracter {
                     .artist(metadata.get(XMPDM.ARTIST))
                     .album(metadata.get(XMPDM.ALBUM))
                     .duration(convertSecondsToDuration(metadata.get(XMPDM.DURATION)))
-                    .year(Integer.parseInt(metadata.get(XMPDM.RELEASE_DATE).substring(0, 4)))
+                    .year(metadata.get(XMPDM.RELEASE_DATE).substring(0, 4))
                     .build();
 
         } catch (IOException | SAXException | TikaException e) {

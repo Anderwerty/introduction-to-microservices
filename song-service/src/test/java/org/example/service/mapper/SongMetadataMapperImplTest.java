@@ -13,16 +13,16 @@ class SongMetadataMapperImplTest {
 
     @Test
     void mapToEntityShouldReturnEntity(){
-        SongMetadata songMetaData = songMetaDataMapper.mapToEntity(DataUtils.initSongMetaDataDto());
+        SongMetadata songMetaData = songMetaDataMapper.mapToEntity(DataUtils.initSongMetaDataDto(1));
 
-        assertEquals(songMetaData, DataUtils.initSongMetaData(null));
+        assertEquals(songMetaData, DataUtils.initSongMetaData(1));
     }
 
     @Test
     void mapToDtoShouldReturnDto(){
         SongMetaDataDto songMetaData = songMetaDataMapper.mapToDto(DataUtils.initSongMetaData(1));
 
-        assertEquals(songMetaData, DataUtils.initSongMetaDataDto());
+        assertEquals(songMetaData, DataUtils.initSongMetaDataDto(1));
     }
 
 }

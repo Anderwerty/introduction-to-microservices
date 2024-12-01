@@ -19,8 +19,8 @@ public class SongMetadata {
     @Column(name = "album")
     private String album;
 
-    @Column(name = "length")
-    private String length;
+    @Column(name = "duration")
+    private String duration;
 
     @Column(name = "year_creation")
     private Integer year;

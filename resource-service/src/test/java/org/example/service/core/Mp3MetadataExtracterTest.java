@@ -2,7 +2,7 @@ package org.example.service.core;
 
 import org.apache.tika.parser.mp3.Mp3Parser;
 import org.apache.tika.sax.BodyContentHandler;
-import org.example.service.rest.dto.SongMetadataDto;
+import org.example.service.dto.SongMetadataDto;
 import org.junit.jupiter.api.Test;
 
 import static org.example.DataUtils.readFile;
@@ -24,7 +24,7 @@ class Mp3MetadataExtracterTest {
                 .artist("Антитіла")
                 .album("February 2023")
                 .duration("03:19")
-                .year(2023)
+                .year("2023")
                 .build();
 
         assertEquals(actual, expected);

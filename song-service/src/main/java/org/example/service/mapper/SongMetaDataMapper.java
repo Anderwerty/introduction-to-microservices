@@ -8,10 +8,10 @@ import org.mapstruct.ReportingPolicy;
 
 @Mapper(
         componentModel = MappingConstants.ComponentModel.SPRING,
-        unmappedTargetPolicy = ReportingPolicy.IGNORE
-)public interface SongMetaDataMapper {
+        unmappedTargetPolicy = ReportingPolicy.IGNORE)
+public interface SongMetaDataMapper {
 
-    SongMetadata mapToEntity (SongMetaDataDto dto);
+    SongMetadata mapToEntity(SongMetaDataDto dto);
 
     SongMetaDataDto mapToDto(SongMetadata entity);
 }

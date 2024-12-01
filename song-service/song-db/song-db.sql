@@ -3,12 +3,11 @@ CREATE DATABASE song_metadata_db;
 USE song_metadata_db;
 
 CREATE TABLE song_metadata (
-    id int NOT NULL AUTO_INCREMENT,
-    artist VARCHAR(120),
-    name VARCHAR(120),
-    album VARCHAR(120),
-    length VARCHAR(120),
-    resource_Id int NOT NULL,
-    year int(4),
-    PRIMARY KEY (id)
+    `id` int NOT NULL,
+    `artist` VARCHAR(120),
+    `name` VARCHAR(120),
+    `album` VARCHAR(120),
+    `duration` VARCHAR(120),
+    `year_creation` int(4),
+    PRIMARY KEY (`id`)
 );

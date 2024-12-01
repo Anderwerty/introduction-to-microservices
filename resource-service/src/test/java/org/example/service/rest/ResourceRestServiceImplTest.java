@@ -1,15 +1,16 @@
 package org.example.service.rest;
 
+import org.example.service.client.SongClient;
 import org.example.service.core.MetadataExtracter;
 import org.example.service.core.ResourceService;
 import org.example.service.exception.IllegalResourceException;
-import org.example.service.rest.dto.Identifiable;
-import org.example.service.rest.dto.Identifiables;
-import org.junit.jupiter.api.BeforeEach;
+import org.example.service.dto.Identifiable;
+import org.example.service.dto.Identifiables;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -28,12 +29,12 @@ class ResourceRestServiceImplTest {
     @Mock
     private MetadataExtracter metadataExtracter;
 
+    @Mock
+    private SongClient songClient;
+
+    @InjectMocks
     private ResourceRestServiceImpl resourceRestService;
 
-    @BeforeEach
-    void init() {
-        resourceRestService = new ResourceRestServiceImpl(resourceService, metadataExtracter, 20);
-    }
 
     @Test
     void storeMetaDataShouldStoreData() {

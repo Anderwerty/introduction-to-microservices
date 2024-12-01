@@ -2,7 +2,10 @@ package org.example.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.config.ApplicationConfig;
-import org.example.service.rest.dto.ErrorMessage;
+import org.example.service.dto.ErrorMessage;
+import org.example.service.dto.Identifiables;
+import org.example.service.dto.SongMetadataDto;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -11,15 +14,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.test.web.client.MockRestServiceServer;
+import org.springframework.test.web.client.match.MockRestRequestMatchers;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.client.RestTemplate;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Stream;
 
 import static org.example.DataUtils.FILE_BYTES;
 import static org.example.DataUtils.readFile;
 import static org.hamcrest.Matchers.*;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -31,6 +42,9 @@ class ResourceControllerTest {
     private static final String NOT_EXISTED_ID = "123";
     @Autowired
     private MockMvc mockMvc;
+
+    @Autowired
+    private RestTemplate restTemplate;
 
     private final ObjectMapper mapper = new ObjectMapper();
 
@@ -73,15 +87,30 @@ class ResourceControllerTest {
     }
 
     @Test
+    @Order(1) // use to be sure about id value
     void createMetadata() throws Exception {
+
         byte[] fileBytes = readFile("src/test/resources/fortecya-bahmut.mp3");
+        MockRestServiceServer mockServer = MockRestServiceServer.createServer(restTemplate);
+        SongMetadataDto request = SongMetadataDto.builder()
+                .id(5)
+                .artist("Антитіла")
+                .name("Фортеця Бахмут")
+                .album("February 2023")
+                .duration("03:19")
+                .year("2023")
+                .build();
+
+        mockServer.expect(requestTo("http://song-service/songs"))
+                .andExpect(method(HttpMethod.POST))
+                .andExpect(MockRestRequestMatchers.content().string(mapper.writeValueAsString(request)))
+                .andRespond(withSuccess("{ \"id\" : 5}", MediaType.APPLICATION_JSON));
 
         mockMvc.perform(post("/resources")
                         .content(fileBytes)
                         .contentType("audio/mpeg")
                         .accept(MediaType.APPLICATION_JSON)
                 )
-//                .andDo(MockMvcResultHandlers.print())
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").isNumber())
                 .andExpect(jsonPath("$.id").value(greaterThan(2)));
@@ -89,6 +118,13 @@ class ResourceControllerTest {
 
     @Test
     void deleteShouldReturnListOfIds() throws Exception {
+        System.out.println(mapper.writeValueAsString(new Identifiables<>(Arrays.asList(2, 3))));
+        MockRestServiceServer mockServer = MockRestServiceServer.createServer(restTemplate);
+        mockServer.expect(requestTo("http://song-service/songs?id=2,3"))
+                .andExpect(method(HttpMethod.DELETE))
+                .andExpect(MockRestRequestMatchers.queryParam("id","2,3"))
+                .andRespond(withSuccess("{ \"ids\" : [2,3]}", MediaType.APPLICATION_JSON));
+
         mockMvc.perform(delete("/resources")
                         .param("id", "2,3,10")
                         .accept(MediaType.APPLICATION_JSON)

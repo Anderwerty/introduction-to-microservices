@@ -13,21 +13,20 @@ public class DataUtils {
         songMetaData.setAlbum("Земля");
         songMetaData.setArtist("гурт Oкеан Ельзи, вокаліст Святослав Вакарчук");
         songMetaData.setName("Обійми");
-        songMetaData.setLength("3:46");
+        songMetaData.setDuration("3:46");
         songMetaData.setYear(2013);
-        songMetaData.setResourceId(1);
 
         return songMetaData;
     }
 
-    public static SongMetaDataDto initSongMetaDataDto() {
+    public static SongMetaDataDto initSongMetaDataDto(Integer id) {
         return SongMetaDataDto.builder()
+                .id(id)
                 .album("Земля")
                 .artist("гурт Oкеан Ельзи, вокаліст Святослав Вакарчук")
                 .name("Обійми")
-                .length("3:46")
-                .year(2013)
-                .resourceId(1)
+                .duration("3:46")
+                .year("2013")
                 .build();
     }
 }

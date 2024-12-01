@@ -1,16 +1,16 @@
-package org.example.annotation;
+package org.example.service.validator.annotation;
 
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
-import org.example.service.validator.IdConstraintValidator;
+import org.example.service.validator.IdsConstraintValidator;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Constraint(validatedBy = {IdConstraintValidator.class})
-public @interface IdValidation {
-    String message() default "Invalid id value";
+@Constraint(validatedBy = {IdsConstraintValidator.class})
+public @interface IdsValidation {
+    String message() default "Invalid ids value";
 
     Class<?>[] groups() default {};
 

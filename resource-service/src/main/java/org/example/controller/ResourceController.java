@@ -1,19 +1,17 @@
 package org.example.controller;
 
 import lombok.AllArgsConstructor;
-import org.example.annotation.IdValidation;
-import org.example.annotation.IdsValidation;
-import org.example.service.rest.dto.Identifiable;
+import org.example.service.validator.annotation.IdValidation;
+import org.example.service.validator.annotation.IdsValidation;
+import org.example.service.dto.Identifiable;
 import org.example.service.rest.ResourceRestService;
-import org.example.service.rest.dto.Identifiables;
+import org.example.service.dto.Identifiables;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 import static org.springframework.http.HttpHeaders.ACCEPT_ENCODING;
 
