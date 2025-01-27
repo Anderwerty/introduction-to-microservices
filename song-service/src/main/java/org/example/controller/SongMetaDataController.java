@@ -1,5 +1,6 @@
 package org.example.controller;
 
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.example.service.rest.SongMetaDataRestService;
 import org.example.service.rest.dto.Identifiable;
@@ -14,8 +15,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/songs")
 @AllArgsConstructor(onConstructor = @__(@Autowired))
@@ -25,7 +24,7 @@ public class SongMetaDataController {
     private final SongMetaDataRestService songMetaDataRestService;
 
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Identifiable<Integer>> createMetadata(@RequestBody SongMetaDataDto songMetaDataDto) {
+    public ResponseEntity<Identifiable<Integer>> createMetadata(@RequestBody @Valid SongMetaDataDto songMetaDataDto) {
         HttpHeaders httpHeaders= new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
         return ResponseEntity.ok()
@@ -34,8 +33,9 @@ public class SongMetaDataController {
     }
 
     @GetMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<SongMetaDataDto> getSongMetaData(@PathVariable @IdValidation String id) {
-        HttpHeaders httpHeaders= new HttpHeaders();
+    public ResponseEntity<SongMetaDataDto> getSongMetaData(@PathVariable
+                                                           @IdValidation String id) {
+        HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
         return ResponseEntity.ok()
                 .headers(httpHeaders)
@@ -43,8 +43,9 @@ public class SongMetaDataController {
     }
 
     @DeleteMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Identifiables<Integer>> deleteResources(@RequestParam(required = false, name = "id")  @IdsValidation String ids) {
-        HttpHeaders httpHeaders= new HttpHeaders();
+    public ResponseEntity<Identifiables<Integer>> deleteResources(@RequestParam(required = false, name = "id")
+                                                                  @IdsValidation String ids) {
+        HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
         return ResponseEntity.ok()
                 .headers(httpHeaders)

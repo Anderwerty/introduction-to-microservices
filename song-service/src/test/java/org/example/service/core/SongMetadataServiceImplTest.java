@@ -3,6 +3,8 @@ package org.example.service.core;
 import org.example.entity.SongMetadata;
 import org.example.repository.MetadataRepository;
 import org.example.service.exception.NotFoundException;
+import org.example.service.exception.SongAlreadyExistRuntimeException;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -37,6 +39,17 @@ class SongMetadataServiceImplTest {
         Integer expectedId = 1;
 
         assertEquals(actualId, expectedId);
+    }
+
+    @Test
+    void storeMetaDataShouldThrowExceptionWhenSongWithSuchIdExist() {
+        SongMetadata songMetaData = initSongMetaData(1);
+        when(metadataRepository.existsById(1)).thenReturn(true);
+
+        SongAlreadyExistRuntimeException exception = assertThrows(SongAlreadyExistRuntimeException.class,
+                () -> songMetaDataService.storeMetaData(songMetaData));
+        assertEquals("Metadata for song with id [1] already exists", exception.getMessage());
+
     }
 
     @Test

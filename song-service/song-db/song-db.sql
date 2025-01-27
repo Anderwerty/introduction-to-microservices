@@ -4,10 +4,10 @@ USE song_metadata_db;
 
 CREATE TABLE song_metadata (
     `id` int NOT NULL,
-    `artist` VARCHAR(120),
-    `name` VARCHAR(120),
-    `album` VARCHAR(120),
-    `duration` VARCHAR(120),
+    `artist` VARCHAR(100),
+    `name` VARCHAR(100),
+    `album` VARCHAR(100),
+    `duration` VARCHAR(5),
     `year_creation` int(4),
     PRIMARY KEY (`id`)
 );

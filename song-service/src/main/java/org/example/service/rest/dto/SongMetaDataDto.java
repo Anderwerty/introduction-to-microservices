@@ -4,14 +4,16 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.example.service.validator.annotation.SongMetadataValidation;
 
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@SongMetadataValidation
 public class SongMetaDataDto {
 
-    private Integer id;
+    private String id;
 
     private String name;
 

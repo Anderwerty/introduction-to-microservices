@@ -45,13 +45,6 @@ class SongMetadataRestServiceImplTest {
     }
 
     @Test
-    void getMetaDataShouldThrowExceptionWhenIdIsNotInteger() {
-        IllegalArgumentException exception =
-                assertThrows(IllegalArgumentException.class, () -> songMetaDataRestService.getMetaData("abc"));
-        assertEquals("Id [abc] is not int type", exception.getMessage());
-    }
-
-    @Test
     void getMetaDataShouldReturnSongMetaData() {
         SongMetadata entity = initSongMetaData(1);
         SongMetaDataDto dto = initSongMetaDataDto(1);

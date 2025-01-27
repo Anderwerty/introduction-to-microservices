@@ -32,13 +32,9 @@ public class SongMetaDataRestServiceImpl implements SongMetaDataRestService {
 
     @Override
     public SongMetaDataDto getMetaData(String id) {
-        try {
-            Integer identifier = Integer.valueOf(id);
-            SongMetadata metaData = songMetaDataService.getMetaData(identifier);
-            return songMetaDataMapper.mapToDto(metaData);
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException(String.format("Id [%s] is not int type", id), e);
-        }
+        Integer identifier = Integer.valueOf(id);
+        SongMetadata metaData = songMetaDataService.getMetaData(identifier);
+        return songMetaDataMapper.mapToDto(metaData);
     }
 
     @Override
@@ -50,9 +46,6 @@ public class SongMetaDataRestServiceImpl implements SongMetaDataRestService {
         List<Integer> ids = Arrays.stream(idsParameter.split(","))
                 .map(Integer::valueOf)
                 .toList();
-        if (ids.isEmpty()) {
-            return new Identifiables(Collections.emptyList());
-        }
 
         return new Identifiables(songMetaDataService.deleteAll(ids));
     }

@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import org.example.entity.SongMetadata;
 import org.example.repository.MetadataRepository;
 import org.example.service.exception.NotFoundException;
+import org.example.service.exception.SongAlreadyExistRuntimeException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +20,10 @@ public class SongMetaDataServiceImpl implements SongMetaDataService {
 
     @Override
     public Integer storeMetaData(SongMetadata songMetaData) {
+        if(metadataRepository.existsById(songMetaData.getId())){
+            throw new SongAlreadyExistRuntimeException(String.format("Metadata for song with id [%s] already exists",
+                    songMetaData.getId()));
+        }
         SongMetadata savedSongMetadata = metadataRepository.save(songMetaData);
 
         return savedSongMetadata.getId();

@@ -40,7 +40,7 @@ public class IdsConstraintValidator implements ConstraintValidator<IdsValidation
             }
             if (Integer.parseInt(id) <= 0) {
                 context.disableDefaultConstraintViolation();
-                context.buildConstraintViolationWithTemplate(String.format("Id [%s] is positive int", id))
+                context.buildConstraintViolationWithTemplate(String.format("Id [%s] is not a positive int", id))
                         .addConstraintViolation();
                 return false;
             }
