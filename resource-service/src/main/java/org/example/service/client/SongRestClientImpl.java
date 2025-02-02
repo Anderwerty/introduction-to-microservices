@@ -24,7 +24,6 @@ public class SongRestClientImpl implements SongClient {
         this.basePath = basePath;
     }
 
-
     @Override
     public Identifiable<Integer> saveSongMetadata(SongMetadataDto songMetadataDto) {
         String url = basePath + "songs";
@@ -34,9 +33,6 @@ public class SongRestClientImpl implements SongClient {
 
         HttpEntity<SongMetadataDto> httpEntity = new HttpEntity<>(songMetadataDto, headers);
         ResponseEntity<Identifiable> responseEntity = restTemplate.postForEntity(url, httpEntity, Identifiable.class);
-        log.info(responseEntity);
-        log.info(responseEntity.getBody());
-        log.info(responseEntity.getStatusCode());
 
         return responseEntity.getBody();
     }

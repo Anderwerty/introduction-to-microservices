@@ -31,7 +31,7 @@ public class ResourceServiceImpl implements ResourceService {
                 .orElseThrow(() -> new ResourceNotFoundException(String.format("Resources with id=[%d] doesn't exist", id)));
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     @Override
     public List<Integer> deleteAll(List<Integer> ids) {
         Iterable<Resource> existedResources = resourceRepository.findAllById(ids);

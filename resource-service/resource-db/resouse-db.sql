@@ -1,9 +1,4 @@
-CREATE DATABASE resources_db;
-
-USE resources_db;
-
 CREATE TABLE resources (
-    id int NOT NULL AUTO_INCREMENT,
-    file LONGBLOB,
-    PRIMARY KEY (id)
+    id SERIAL PRIMARY KEY,
+    file BYTEA
 );

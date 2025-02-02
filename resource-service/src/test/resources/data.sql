@@ -1,5 +1,4 @@
-INSERT INTO resources(`id`, `file`) VALUES(1, '1234');
-INSERT INTO resources(`id`, `file`) VALUES(2, '23');
-INSERT INTO resources(`id`, `file`) VALUES(3, '3456');
-INSERT INTO resources(`id`, `file`) VALUES(4, '456789');
-
+INSERT INTO resources(file) VALUES (X'31323334');  -- '1234' as hex
+INSERT INTO resources(file) VALUES (X'3233');      -- '23' as hex
+INSERT INTO resources(file) VALUES (X'33343536');  -- '3456' as hex
+INSERT INTO resources(file) VALUES (X'343536373839'); -- '456789' as hex

@@ -44,6 +44,12 @@ public class ResourceRestServiceImpl implements ResourceRestService {
     public byte[] getAudioData(String id) {
         try {
             Integer identifier = Integer.valueOf(id);
+            if (identifier == 0) {
+                throw new IllegalArgumentException(String.format("Id [%s] is zero", id));
+            }
+            if (identifier < 0) {
+                throw new IllegalArgumentException(String.format("Id [%s] is negative", id));
+            }
             return resourceService.getAudioData(identifier);
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException(String.format("Id [%s] is not int type", id), e);

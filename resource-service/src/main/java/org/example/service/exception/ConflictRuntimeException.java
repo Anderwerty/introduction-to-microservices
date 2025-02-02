@@ -6,7 +6,8 @@ import org.example.service.dto.ErrorMessage;
 
 @Getter
 @RequiredArgsConstructor
-public class NotValidSongMetaDataRuntimeException extends RuntimeException {
+public class ConflictRuntimeException extends RuntimeException {
+
     private final ErrorMessage errorMessage;
 
 }

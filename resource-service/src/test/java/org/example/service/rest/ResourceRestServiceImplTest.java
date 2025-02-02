@@ -55,10 +55,38 @@ class ResourceRestServiceImplTest {
     }
 
     @Test
+    void storeMetaDataShouldNotStoreIfNullArray() {
+        IllegalResourceException exception = assertThrows(IllegalResourceException.class,
+                () -> resourceRestService.storeFile(null));
+        assertEquals(exception.getMessage(), "File doesn't exist");
+    }
+
+    @Test
+    void storeMetaDataShouldNotStoreIfArrayIsEmpty() {
+        IllegalResourceException exception = assertThrows(IllegalResourceException.class,
+                () -> resourceRestService.storeFile(new byte[0]));
+        assertEquals(exception.getMessage(), "File is empty");
+    }
+
+    @Test
     void getMetaDataShouldThrowExceptionWhenIdIsNotInteger() {
         IllegalArgumentException exception =
                 assertThrows(IllegalArgumentException.class, () -> resourceRestService.getAudioData("abc"));
         assertEquals("Id [abc] is not int type", exception.getMessage());
+    }
+
+    @Test
+    void getMetaDataShouldThrowExceptionWhenIdZero() {
+        IllegalArgumentException exception =
+                assertThrows(IllegalArgumentException.class, () -> resourceRestService.getAudioData("0"));
+        assertEquals("Id [0] is zero", exception.getMessage());
+    }
+
+    @Test
+    void getMetaDataShouldThrowExceptionWhenIdNegativeInteger() {
+        IllegalArgumentException exception =
+                assertThrows(IllegalArgumentException.class, () -> resourceRestService.getAudioData("-1"));
+        assertEquals("Id [-1] is negative", exception.getMessage());
     }
 
     @Test

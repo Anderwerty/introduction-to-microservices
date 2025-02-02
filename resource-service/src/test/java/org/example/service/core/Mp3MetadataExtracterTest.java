@@ -19,7 +19,7 @@ class Mp3MetadataExtracterTest {
     void testExtractMetaData() {
         SongMetadataDto actual = extracter.extract(FILE_BYTES, 1);
         SongMetadataDto expected = SongMetadataDto.builder()
-                .id(1)
+                .id("1")
                 .name("Фортеця Бахмут")
                 .artist("Антитіла")
                 .album("February 2023")

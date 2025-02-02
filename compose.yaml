@@ -1,0 +1,22 @@
+services:
+  resource-db-postgres:
+    image: postgres:16
+    container_name: resource-db-postgres
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_DB: resources_db
+    ports:
+      - "5433:5432"
+    restart: always
+
+  song-db-postgres:
+    image: postgres:16
+    container_name: song-db-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: song_metadata_db
+    ports:
+      - "5432:5432"
+    restart: always

@@ -31,20 +31,22 @@ public class IdsConstraintValidator implements ConstraintValidator<IdsValidation
         }
 
         String[] ids = idsQueryParameter.split(",");
+        boolean isValid = true;
         for (String id : ids) {
             if (!StringUtils.isNumeric(id)) {
                 context.disableDefaultConstraintViolation();
                 context.buildConstraintViolationWithTemplate(String.format("Id [%s] is not a number", id))
                         .addConstraintViolation();
-                return false;
+                isValid = false;
+                continue;
             }
             if (Integer.parseInt(id) <= 0) {
                 context.disableDefaultConstraintViolation();
                 context.buildConstraintViolationWithTemplate(String.format("Id [%s] is not a positive int", id))
                         .addConstraintViolation();
-                return false;
+                isValid = false;
             }
         }
-        return true;
+        return isValid;
     }
 }

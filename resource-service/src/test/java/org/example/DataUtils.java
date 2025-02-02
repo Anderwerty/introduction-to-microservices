@@ -2,8 +2,7 @@ package org.example;
 
 import lombok.experimental.UtilityClass;
 import org.example.entity.Resource;
-import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.web.multipart.MultipartFile;
+import org.example.service.dto.SongMetadataDto;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -16,12 +15,17 @@ public class DataUtils {
     public static final Resource RESOURCE_WITH_ID = new Resource(1, FILE_BYTES);
     public static final Resource RESOURCE_WITH_ID_2 = new Resource(2, FILE_BYTES);
 
-    public static final String CONTENT_TYPE = "audio/mpeg";
 
-    public static final String FILENAME = "music.mp3";
-    public static final MultipartFile MULTIPART_FILE =
-            new MockMultipartFile(FILENAME, FILENAME, CONTENT_TYPE, FILE_BYTES);
-
+    public static SongMetadataDto initSongMetaDataDto(Integer id) {
+        return SongMetadataDto.builder()
+                .id(Integer.toString(id))
+                .album("Земля")
+                .artist("гурт Oкеан Ельзи, вокаліст Святослав Вакарчук")
+                .name("Обійми")
+                .duration("3:46")
+                .year("2013")
+                .build();
+    }
 
     public static byte[] readFile(String filename) {
         try {

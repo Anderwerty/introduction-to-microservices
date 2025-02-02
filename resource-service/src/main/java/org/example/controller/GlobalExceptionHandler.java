@@ -17,32 +17,36 @@ import java.util.stream.Collectors;
 @Log4j2
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler({ConstraintViolationException.class, IllegalResourceException.class,
+    @ExceptionHandler({ConstraintViolationException.class,
+            IllegalResourceException.class,
             NotValidSongMetaDataRuntimeException.class,
             IllegalArgumentException.class,
-            RuntimeIOException.class, ConstraintViolationException.class})
+            ConstraintViolationException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorMessage notValidResource(RuntimeException exception) {
         log.error(exception);
         if (exception instanceof ConstraintViolationException e) {
             Map<String, String> details = e.getConstraintViolations().stream()
-                    .collect(Collectors.toMap(x -> x.getPropertyPath().toString(), ConstraintViolation::getMessage, (a, b) -> b));
+                    .collect(Collectors.toMap(x -> x.getPropertyPath().toString(),
+                            ConstraintViolation::getMessage, (a, b) -> b));
             return new ErrorMessage(HttpStatus.BAD_REQUEST.value(), "Validation error", details);
         }
-        if(exception instanceof NotFoundSongMetaDataRuntimeException e){
-            return e.getErrorMessage();
-        }
+
         return new ErrorMessage(HttpStatus.BAD_REQUEST.value(), exception.getMessage());
     }
 
-    @ExceptionHandler({ResourceNotFoundException.class, NotFoundSongMetaDataRuntimeException.class})
+    @ExceptionHandler({ResourceNotFoundException.class})
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorMessage resourceNotFound(RuntimeException exception) {
+    public ErrorMessage resourceNotFound(ResourceNotFoundException exception) {
         log.error(exception);
-        if(exception instanceof NotFoundSongMetaDataRuntimeException e){
-            return e.getErrorMessage();
-        }
         return new ErrorMessage(HttpStatus.NOT_FOUND.value(), exception.getMessage());
+    }
+
+    @ExceptionHandler(ConflictRuntimeException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ErrorMessage conflict(ConflictRuntimeException exception) {
+        log.error(exception);
+        return exception.getErrorMessage();
     }
 
 }
