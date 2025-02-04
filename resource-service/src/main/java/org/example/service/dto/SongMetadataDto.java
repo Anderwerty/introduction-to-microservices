@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class SongMetadataDto {
 
-    private String id;
+    private Integer id;
 
     private String name;
 

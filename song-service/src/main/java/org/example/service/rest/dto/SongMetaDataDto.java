@@ -13,7 +13,7 @@ import org.example.service.validator.annotation.SongMetadataValidation;
 @SongMetadataValidation
 public class SongMetaDataDto {
 
-    private String id;
+    private Integer id;
 
     private String name;
 

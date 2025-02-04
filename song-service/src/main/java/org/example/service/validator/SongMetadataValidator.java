@@ -11,10 +11,10 @@ public class SongMetadataValidator implements ConstraintValidator<SongMetadataVa
     @Override
     public boolean isValid(SongMetaDataDto dto, ConstraintValidatorContext context) {
         boolean isValid = true;
-        if (dto.getId() == null || !isNumber(dto.getId())) {
+        if (dto.getId() == null) {
             isValid = false;
             context.disableDefaultConstraintViolation();
-            context.buildConstraintViolationWithTemplate("Numeric string, must match an existing Resource ID.")
+            context.buildConstraintViolationWithTemplate("Numeric, must match an existing Resource ID.")
                     .addPropertyNode("id")
                     .addConstraintViolation();
         }
@@ -54,15 +54,6 @@ public class SongMetadataValidator implements ConstraintValidator<SongMetadataVa
                     .addConstraintViolation();
         }
         return isValid;
-    }
-
-    private static boolean isNumber(String numericString) {
-        try {
-            Integer.parseInt(numericString);
-            return true;
-        } catch (NumberFormatException e) {
-            return false;
-        }
     }
 
 }

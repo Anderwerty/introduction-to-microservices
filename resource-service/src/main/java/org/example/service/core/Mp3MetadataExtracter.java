@@ -31,7 +31,7 @@ public class Mp3MetadataExtracter implements MetadataExtracter {
             mp3Parser.parse(inputstream, handler, metadata, context);
 
             return SongMetadataDto.builder()
-                    .id(Integer.toString(id))
+                    .id(id)
                     .name(metadata.get("dc:title"))
                     .artist(metadata.get(XMPDM.ARTIST))
                     .album(metadata.get(XMPDM.ALBUM))

@@ -29,7 +29,7 @@ public class DataUtils {
 
     public static SongMetaDataDto initSongMetaDataDto(Integer id, String year) {
         return SongMetaDataDto.builder()
-                .id(Integer.toString(id))
+                .id(id)
                 .album("Земля")
                 .artist("гурт Oкеан Ельзи, вокаліст Святослав Вакарчук")
                 .name("Обійми")

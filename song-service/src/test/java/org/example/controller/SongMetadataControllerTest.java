@@ -92,7 +92,7 @@ class SongMetadataControllerTest {
     @Test
     void createMetadata() throws Exception {
         SongMetaDataDto request = SongMetaDataDto.builder()
-                .id("3")
+                .id(3)
                 .artist("Антитіла")
                 .name("Фортеця Бахмут")
                 .album("February 2023")
@@ -115,7 +115,7 @@ class SongMetadataControllerTest {
     @Test
     void createMetadataWithIdAlreadyExists() throws Exception {
         SongMetaDataDto request = SongMetaDataDto.builder()
-                .id("1")
+                .id(1)
                 .artist("Антитіла")
                 .name("Фортеця Бахмут")
                 .album("February 2023")
@@ -144,7 +144,7 @@ class SongMetadataControllerTest {
                 "year", "YYYY format between 1900-2099.",
                 "album", "1-100 characters text",
                 "name", "1-100 characters text",
-                "id", "Numeric string, must match an existing Resource ID.");
+                "id", "Numeric, must match an existing Resource ID.");
         ErrorMessage errorMessage = new ErrorMessage(400, "Validation error", details);
 
         mockMvc.perform(post("/songs")
@@ -242,21 +242,14 @@ class SongMetadataControllerTest {
                         .year(null)
                         .build()),
                 Arguments.of(SongMetaDataDto.builder()
-                        .id("")
+                        .id(null)
                         .artist("")
                         .name("")
                         .album("")
                         .duration("")
                         .year("")
-                        .build()),
-                Arguments.of(SongMetaDataDto.builder()
-                        .id("A")
-                        .artist("A".repeat(101))
-                        .name("A".repeat(101))
-                        .album("A".repeat(101))
-                        .duration("A3:35")
-                        .year("02023")
-                        .build()));
+                        .build())
+                );
     }
 
 }
