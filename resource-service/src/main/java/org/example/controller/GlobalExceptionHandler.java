@@ -31,6 +31,9 @@ public class GlobalExceptionHandler {
                             ConstraintViolation::getMessage, (a, b) -> b));
             return new ErrorMessage(HttpStatus.BAD_REQUEST.value(), "Validation error", details);
         }
+        if (exception instanceof NotValidSongMetaDataRuntimeException e) {
+            return new ErrorMessage(HttpStatus.BAD_REQUEST.value(),  "Validation error", e.getErrorMessage().getDetails());
+        }
 
         return new ErrorMessage(HttpStatus.BAD_REQUEST.value(), exception.getMessage());
     }

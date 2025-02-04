@@ -162,7 +162,7 @@ class ResourceControllerTest {
     }
 
     @Test
-    void createMetadataToGetBadRequest() throws Exception {
+    void createMetadataWithNotExpectedContentTypeToGetBadRequest() throws Exception {
         ErrorMessage errorMessage = new ErrorMessage(400,"Not valid content type [application/pdf]" );
         byte[] fileBytes = readFile("src/test/resources/music.pdf");
         MockRestServiceServer.createServer(restTemplate);
@@ -174,6 +174,32 @@ class ResourceControllerTest {
                 )
                 .andExpect(status().isBadRequest())
                 .andExpect(content().json(mapper.writeValueAsString(errorMessage)));
+    }
+
+    @Test
+    void createMetadataWithNotValidFileToGetBadRequest() throws Exception {
+        ErrorMessage errorMessage = new ErrorMessage(400,"Validation exception" );
+        ErrorMessage expectedErrorMessage = new ErrorMessage(400,"Validation error", errorMessage.getDetails());
+        byte[] fileBytes = readFile("src/test/resources/invalid-sample-with-missed-tags.mp3");
+        MockRestServiceServer mockServer = MockRestServiceServer.createServer(restTemplate);
+
+        mockServer.expect(requestTo("http://song-service/songs"))
+                .andExpect(method(HttpMethod.POST))
+                .andExpect(MockRestRequestMatchers.jsonPath("$.artist", is("")))
+                .andExpect(MockRestRequestMatchers.jsonPath("$.name", is("Valid Title")))
+                .andExpect(MockRestRequestMatchers.jsonPath("$.album", is("")))
+                .andExpect(MockRestRequestMatchers.jsonPath("$.duration", is("00:07")))
+                .andExpect(MockRestRequestMatchers.jsonPath("$.year", is("2025")))
+                .andRespond(withStatus(HttpStatus.BAD_REQUEST)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(mapper.writeValueAsString(errorMessage)));
+        mockMvc.perform(post("/resources")
+                        .content(fileBytes)
+                        .contentType("audio/mpeg")
+                        .accept(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(content().json(mapper.writeValueAsString(expectedErrorMessage)));
     }
 
     @Test
