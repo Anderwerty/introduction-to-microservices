@@ -3,10 +3,7 @@ package org.example.service.client;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.DataUtils;
 import org.example.config.ApplicationConfig;
-import org.example.service.dto.ErrorMessage;
-import org.example.service.dto.Identifiable;
-import org.example.service.dto.Identifiables;
-import org.example.service.dto.SongMetadataDto;
+import org.example.service.dto.*;
 import org.example.service.exception.ConflictRuntimeException;
 import org.example.service.exception.NotValidSongMetaDataRuntimeException;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,6 +24,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.*;
@@ -71,40 +69,40 @@ class SongRestClientImplTest {
 
     @Test
     void saveSongMetadataShouldNotSaveNotValidData() throws Exception {
-        SongMetadataDto metadataDto = DataUtils.initSongMetaDataDto(1);
-        ErrorMessage errorMessage = new ErrorMessage(400, "Validation exception");
+        SongMetadataDto metadataDto = DataUtils.initSongMetaDataDto(null);
+        ValidationErrorResponse validationErrorResponse = new ValidationErrorResponse(400, Map.of("id","ID must be not null"));
         mockServer.expect(ExpectedCount.once(),
                         requestTo(new URI("http://song-service/songs")))
                 .andExpect(method(HttpMethod.POST))
                 .andExpect(content().json(mapper.writeValueAsString(metadataDto)))
                 .andRespond(withStatus(HttpStatus.BAD_REQUEST)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .body(mapper.writeValueAsString(errorMessage)));
+                        .body(mapper.writeValueAsString(validationErrorResponse)));
 
         NotValidSongMetaDataRuntimeException exception =
                 assertThrows(NotValidSongMetaDataRuntimeException.class,
                         () -> songRestClient.saveSongMetadata(metadataDto));
 
-        assertEquals(errorMessage, exception.getErrorMessage());
+        assertEquals(validationErrorResponse, exception.getValidationErrorResponse());
     }
 
     @Test
     void saveSongMetadataShouldNotSaveDueToConflict() throws Exception {
         SongMetadataDto metadataDto = DataUtils.initSongMetaDataDto(1);
-        ErrorMessage errorMessage = new ErrorMessage(409, "Song metadata with id=[123] already exists");
+        SimpleErrorResponse validationErrorResponse = new SimpleErrorResponse(409, "Song metadata with id=123 already exists");
         mockServer.expect(ExpectedCount.once(),
                         requestTo(new URI("http://song-service/songs")))
                 .andExpect(method(HttpMethod.POST))
                 .andExpect(content().json(mapper.writeValueAsString(metadataDto)))
                 .andRespond(withStatus(HttpStatus.CONFLICT)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .body(mapper.writeValueAsString(errorMessage)));
+                        .body(mapper.writeValueAsString(validationErrorResponse)));
 
         ConflictRuntimeException exception =
                 assertThrows(ConflictRuntimeException.class,
                         () -> songRestClient.saveSongMetadata(metadataDto));
 
-        assertEquals(errorMessage, exception.getErrorMessage());
+        assertEquals(validationErrorResponse, exception.getErrorResponse());
     }
 
     @Test
@@ -147,7 +145,7 @@ class SongRestClientImplTest {
 
     @Test
     void deleteSongsMetadataShouldNotDeleteDataDueNotValidInput() throws Exception {
-        ErrorMessage errorMessage = new ErrorMessage(400, "Id [-1] is positive int");
+        ValidationErrorResponse validationErrorResponse = new ValidationErrorResponse(400, Map.of("id","Id -1 is positive int"));
 
         URI uri = UriComponentsBuilder.fromUriString("http://song-service/songs")
                 .queryParam("id", "-1,2")
@@ -159,12 +157,12 @@ class SongRestClientImplTest {
                 .andExpect(method(HttpMethod.DELETE))
                 .andRespond(withStatus(HttpStatus.BAD_REQUEST)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .body(mapper.writeValueAsString(errorMessage)));
+                        .body(mapper.writeValueAsString(validationErrorResponse)));
 
         NotValidSongMetaDataRuntimeException exception = assertThrows(NotValidSongMetaDataRuntimeException.class,
                 () -> songRestClient.deleteSongsMetadata(List.of(-1, 2)));
 
-        assertEquals(exception.getErrorMessage(), errorMessage);
+        assertEquals(exception.getValidationErrorResponse(), validationErrorResponse);
     }
 }
 

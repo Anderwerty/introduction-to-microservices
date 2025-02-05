@@ -4,16 +4,18 @@ import lombok.AllArgsConstructor;
 import org.example.service.client.SongClient;
 import org.example.service.core.MetadataExtracter;
 import org.example.service.core.ResourceService;
-import org.example.service.dto.SongMetadataDto;
-import org.example.service.exception.IllegalResourceException;
 import org.example.service.dto.Identifiable;
 import org.example.service.dto.Identifiables;
+import org.example.service.dto.SongMetadataDto;
+import org.example.service.exception.IllegalParameterException;
+import org.example.service.exception.IllegalResourceException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 @Transactional
 @AllArgsConstructor
@@ -42,18 +44,8 @@ public class ResourceRestServiceImpl implements ResourceRestService {
 
     @Override
     public byte[] getAudioData(String id) {
-        try {
-            Integer identifier = Integer.valueOf(id);
-            if (identifier == 0) {
-                throw new IllegalArgumentException(String.format("Id [%s] is zero", id));
-            }
-            if (identifier < 0) {
-                throw new IllegalArgumentException(String.format("Id [%s] is negative", id));
-            }
-            return resourceService.getAudioData(identifier);
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException(String.format("Id [%s] is not int type", id), e);
-        }
+        Integer identifier = Integer.valueOf(id);
+        return resourceService.getAudioData(identifier);
     }
 
     @Override
@@ -77,15 +69,16 @@ public class ResourceRestServiceImpl implements ResourceRestService {
 
     private void validateFile(byte[] bytes) {
         if (bytes == null) {
-            throw new IllegalResourceException("File doesn't exist");
+            throw new IllegalResourceException(Map.of("file", "File doesn't exist"));
         }
         if (bytes.length == 0) {
-            throw new IllegalResourceException("File is empty");
+            throw new IllegalResourceException(Map.of("file", "File is empty"));
         }
         String mimeType = metadataExtracter.getMimeType(bytes);
         boolean isNotSupported = Arrays.stream(ALLOWED_CONTENT_TYPES).noneMatch(x -> x.equals(mimeType));
         if (isNotSupported) {
-            throw new IllegalResourceException(String.format("Not valid content type [%s]", mimeType));
+            String message = String.format("Not valid content type %s", mimeType);
+            throw new IllegalResourceException(Map.of("file", message));
         }
     }
 

@@ -21,7 +21,7 @@ public class SongMetaDataServiceImpl implements SongMetaDataService {
     @Override
     public Integer storeMetaData(SongMetadata songMetaData) {
         if(metadataRepository.existsById(songMetaData.getId())){
-            throw new SongAlreadyExistRuntimeException(String.format("Metadata for song with id [%s] already exists",
+            throw new SongAlreadyExistRuntimeException(String.format("Metadata for song with id %s already exists",
                     songMetaData.getId()));
         }
         SongMetadata savedSongMetadata = metadataRepository.save(songMetaData);
@@ -32,7 +32,7 @@ public class SongMetaDataServiceImpl implements SongMetaDataService {
     @Override
     public SongMetadata getMetaData(Integer id) {
         return metadataRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException(String.format("Song metadata with id=[%d] doesn't exist", id)));
+                .orElseThrow(() -> new NotFoundException(String.format("Song metadata with id=%d doesn't exist", id)));
     }
 
     @Transactional

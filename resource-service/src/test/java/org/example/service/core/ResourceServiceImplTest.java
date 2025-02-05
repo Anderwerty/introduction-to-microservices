@@ -49,7 +49,7 @@ class ResourceServiceImplTest {
         when(resourceRepository.findById(1)).thenReturn(Optional.empty());
 
         ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () -> resourceService.getAudioData(1));
-        assertEquals(exception.getMessage(), "Resources with id=[1] doesn't exist");
+        assertEquals(exception.getMessage(), "Resources with id=1 doesn't exist");
     }
 
     @Test

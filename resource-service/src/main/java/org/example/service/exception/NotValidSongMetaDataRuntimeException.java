@@ -2,11 +2,11 @@ package org.example.service.exception;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.example.service.dto.ErrorMessage;
+import org.example.service.dto.ValidationErrorResponse;
 
 @Getter
 @RequiredArgsConstructor
 public class NotValidSongMetaDataRuntimeException extends RuntimeException {
-    private final ErrorMessage errorMessage;
+    private final ValidationErrorResponse validationErrorResponse;
 
 }

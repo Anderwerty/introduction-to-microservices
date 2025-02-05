@@ -6,8 +6,8 @@ import org.example.service.rest.SongMetaDataRestService;
 import org.example.service.rest.dto.Identifiable;
 import org.example.service.rest.dto.Identifiables;
 import org.example.service.rest.dto.SongMetaDataDto;
-import org.example.service.validator.annotation.IdValidation;
 import org.example.service.validator.annotation.IdsValidation;
+import org.example.service.validator.annotation.PositiveNumberString;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -34,7 +34,7 @@ public class SongMetaDataController {
 
     @GetMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<SongMetaDataDto> getSongMetaData(@PathVariable
-                                                           @IdValidation String id) {
+                                                           @PositiveNumberString String id) {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
         return ResponseEntity.ok()

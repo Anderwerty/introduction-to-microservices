@@ -2,7 +2,8 @@ package org.example.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.config.ApplicationConfig;
-import org.example.service.dto.ErrorMessage;
+import org.example.service.dto.SimpleErrorResponse;
+import org.example.service.dto.ValidationErrorResponse;
 import org.example.service.dto.Identifiables;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -61,51 +62,51 @@ class ResourceControllerTest {
 
     @Test
     void getSongMetaDataIfDataNotExist() throws Exception {
-        ErrorMessage errorMessage = new ErrorMessage(404, "Resources with id=[123] doesn't exist");
+        SimpleErrorResponse errorResponse = new SimpleErrorResponse("404", "Resources with id=123 doesn't exist");
 
         mockMvc.perform(get("/resources/" + NOT_EXISTED_ID).accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
-                .andExpect(content().json(mapper.writeValueAsString(errorMessage)))
+                .andExpect(content().json(mapper.writeValueAsString(errorResponse)))
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
     }
 
     @Test
     void getSongMetaDataIfIdNull() throws Exception {
         String id = null;
-        Map<String, String> details = Map.of("getBinaryAudioData.id", String.format("Id [%s] is not int type", id));
-        ErrorMessage errorMessage = new ErrorMessage(400, "Validation error", details);
+        Map<String, String> details = Map.of("id","ID must be a positive integer number in string format");
+        ValidationErrorResponse errorResponse = new ValidationErrorResponse("400",  details);
 
         mockMvc.perform(get("/resources/" + id).accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().json(mapper.writeValueAsString(errorMessage)))
+                .andExpect(content().json(mapper.writeValueAsString(errorResponse)))
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
     }
 
     @Test
     void getSongMetaDataIfIdBlank() throws Exception {
         String id = "  ";
-        Map<String, String> details = Map.of("getBinaryAudioData.id", "Id is null or blank");
-        ErrorMessage errorMessage = new ErrorMessage(400, "Validation error", details);
+        Map<String, String> details = Map.of("id", "ID must be a positive integer number in string format");
+        ValidationErrorResponse validationErrorResponse = new ValidationErrorResponse("400",  details);
 
         mockMvc.perform(get("/resources/" + id).accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().json(mapper.writeValueAsString(errorMessage)))
+                .andExpect(content().json(mapper.writeValueAsString(validationErrorResponse)))
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
     }
 
     @ParameterizedTest
     @MethodSource("idToErrorMessage")
-    void getSongMetaDataIfIdNotValid(String id, ErrorMessage errorMessage) throws Exception {
+    void getSongMetaDataIfIdNotValid(String id, ValidationErrorResponse validationErrorResponse) throws Exception {
         mockMvc.perform(get("/resources/" + id).contentType("audio/mpeg"))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().json(mapper.writeValueAsString(errorMessage)))
+                .andExpect(content().json(mapper.writeValueAsString(validationErrorResponse)))
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
     }
 
     private static Stream<Arguments> idToErrorMessage() {
         return Stream.of(
-                Arguments.of("abc", new ErrorMessage(400, "Validation error", Map.of("getBinaryAudioData.id", "Id [abc] is not int type"))),
-                Arguments.of("-1", new ErrorMessage(400, "Validation error", Map.of("getBinaryAudioData.id", "Id [-1] is not positive")))
+                Arguments.of("abc", new ValidationErrorResponse(400,  Map.of("id", "ID must be a positive integer number in string format"))),
+                Arguments.of("-1", new ValidationErrorResponse(400, Map.of("id", "ID must be a positive integer number in string format")))
         );
     }
 
@@ -139,7 +140,7 @@ class ResourceControllerTest {
 
         byte[] fileBytes = readFile("src/test/resources/fortecya-bahmut.mp3");
         MockRestServiceServer mockServer = MockRestServiceServer.createServer(restTemplate);
-        ErrorMessage errorMessage = new ErrorMessage(409, null);
+        SimpleErrorResponse validationErrorResponse = new SimpleErrorResponse(409, null);
 
         mockServer.expect(requestTo("http://song-service/songs"))
                 .andExpect(method(HttpMethod.POST))
@@ -150,7 +151,7 @@ class ResourceControllerTest {
                 .andExpect(MockRestRequestMatchers.jsonPath("$.year", is("2023")))
                 .andRespond(withStatus(HttpStatus.CONFLICT)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .body(mapper.writeValueAsString(errorMessage)));
+                        .body(mapper.writeValueAsString(validationErrorResponse)));
 
         mockMvc.perform(post("/resources")
                         .content(fileBytes)
@@ -158,12 +159,12 @@ class ResourceControllerTest {
                         .accept(MediaType.APPLICATION_JSON)
                 )
                 .andExpect(status().isConflict())
-                .andExpect(content().json(mapper.writeValueAsString(errorMessage)));
+                .andExpect(content().json(mapper.writeValueAsString(validationErrorResponse)));
     }
 
     @Test
     void createMetadataWithNotExpectedContentTypeToGetBadRequest() throws Exception {
-        ErrorMessage errorMessage = new ErrorMessage(400,"Not valid content type [application/pdf]" );
+        ValidationErrorResponse errorResponse = new ValidationErrorResponse(400,Map.of("file","Not valid content type application/pdf") );
         byte[] fileBytes = readFile("src/test/resources/music.pdf");
         MockRestServiceServer.createServer(restTemplate);
 
@@ -173,13 +174,13 @@ class ResourceControllerTest {
                         .accept(MediaType.APPLICATION_JSON)
                 )
                 .andExpect(status().isBadRequest())
-                .andExpect(content().json(mapper.writeValueAsString(errorMessage)));
+                .andExpect(content().json(mapper.writeValueAsString(errorResponse)));
     }
 
     @Test
     void createMetadataWithNotValidFileToGetBadRequest() throws Exception {
-        ErrorMessage errorMessage = new ErrorMessage(400,"Validation exception" );
-        ErrorMessage expectedErrorMessage = new ErrorMessage(400,"Validation error", errorMessage.getDetails());
+        ValidationErrorResponse validationErrorResponse = new ValidationErrorResponse(400,null );
+        ValidationErrorResponse expectedValidationErrorResponse = new ValidationErrorResponse(400, validationErrorResponse.getDetails());
         byte[] fileBytes = readFile("src/test/resources/invalid-sample-with-missed-tags.mp3");
         MockRestServiceServer mockServer = MockRestServiceServer.createServer(restTemplate);
 
@@ -192,14 +193,14 @@ class ResourceControllerTest {
                 .andExpect(MockRestRequestMatchers.jsonPath("$.year", is("2025")))
                 .andRespond(withStatus(HttpStatus.BAD_REQUEST)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .body(mapper.writeValueAsString(errorMessage)));
+                        .body(mapper.writeValueAsString(validationErrorResponse)));
         mockMvc.perform(post("/resources")
                         .content(fileBytes)
                         .contentType("audio/mpeg")
                         .accept(MediaType.APPLICATION_JSON)
                 )
                 .andExpect(status().isBadRequest())
-                .andExpect(content().json(mapper.writeValueAsString(expectedErrorMessage)));
+                .andExpect(content().json(mapper.writeValueAsString(expectedValidationErrorResponse)));
     }
 
     @Test
@@ -234,39 +235,39 @@ class ResourceControllerTest {
 
     @Test
     void deleteShouldReturnBadRequestWhenIdQueryParameterTooLong() throws Exception {
-        ErrorMessage errorMessage = new ErrorMessage(400, "Too long ids parameter length [31]");
+        SimpleErrorResponse errorResponse = new SimpleErrorResponse(400, "Too long ids parameter length 31");
 
         mockMvc.perform(delete("/resources")
                         .accept(MediaType.APPLICATION_JSON)
                         .param("id", "200,300,400,500,600,700,800,900")
                         .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
-                        .content(mapper.writeValueAsString(errorMessage))
+                        .content(mapper.writeValueAsString(errorResponse))
                 )
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     void deleteShouldReturnBadRequestWhenIdIsNotNumber() throws Exception {
-        ErrorMessage errorMessage = new ErrorMessage(400, "Id [abc] is not a number");
+        SimpleErrorResponse validationErrorResponse = new SimpleErrorResponse(400, "Id abc is not a number");
 
         mockMvc.perform(delete("/resources")
                         .accept(MediaType.APPLICATION_JSON)
                         .param("id", "abc")
                         .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
-                        .content(mapper.writeValueAsString(errorMessage))
+                        .content(mapper.writeValueAsString(validationErrorResponse))
                 )
                 .andExpect(status().isBadRequest());
     }
 
     @Test
     void deleteShouldReturnBadRequestWhenIdIsNotPositiveNumber() throws Exception {
-        ErrorMessage errorMessage = new ErrorMessage(400, "Id [%s] is not positive int");
+        SimpleErrorResponse validationErrorResponse = new SimpleErrorResponse(400, "Id %s is not positive int");
 
         mockMvc.perform(delete("/resources")
                         .accept(MediaType.APPLICATION_JSON)
                         .param("id", "0,-1")
                         .header("Content-Type", MediaType.APPLICATION_JSON_VALUE)
-                        .content(mapper.writeValueAsString(errorMessage))
+                        .content(mapper.writeValueAsString(validationErrorResponse))
                 )
                 .andExpect(status().isBadRequest());
     }

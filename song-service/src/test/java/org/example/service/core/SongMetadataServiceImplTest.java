@@ -48,7 +48,7 @@ class SongMetadataServiceImplTest {
 
         SongAlreadyExistRuntimeException exception = assertThrows(SongAlreadyExistRuntimeException.class,
                 () -> songMetaDataService.storeMetaData(songMetaData));
-        assertEquals("Metadata for song with id [1] already exists", exception.getMessage());
+        assertEquals("Metadata for song with id 1 already exists", exception.getMessage());
 
     }
 
@@ -66,7 +66,7 @@ class SongMetadataServiceImplTest {
         when(metadataRepository.findById(1)).thenReturn(Optional.empty());
 
         NotFoundException exception = assertThrows(NotFoundException.class, () -> songMetaDataService.getMetaData(1));
-        assertEquals(exception.getMessage(), "Song metadata with id=[1] doesn't exist");
+        assertEquals(exception.getMessage(), "Song metadata with id=1 doesn't exist");
     }
 
     @Test

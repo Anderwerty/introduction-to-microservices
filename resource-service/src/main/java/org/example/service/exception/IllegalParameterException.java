@@ -7,7 +7,7 @@ import java.util.Map;
 
 @RequiredArgsConstructor
 @Getter
-public class IllegalResourceException extends RuntimeException {
+public class IllegalParameterException extends RuntimeException {
     private final Map<String, String> details;
 
 }

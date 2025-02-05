@@ -2,7 +2,8 @@ package org.example.service.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.AllArgsConstructor;
-import org.example.service.dto.ErrorMessage;
+import org.example.service.dto.SimpleErrorResponse;
+import org.example.service.dto.ValidationErrorResponse;
 import org.example.service.exception.ConflictRuntimeException;
 import org.example.service.exception.NotValidSongMetaDataRuntimeException;
 import org.springframework.http.HttpStatus;
@@ -34,12 +35,12 @@ public class RestTemplateResponseErrorHandler implements ResponseErrorHandler {
 
         if (statusCode.is4xxClientError()) {
             if (statusCode == HttpStatus.CONFLICT) {
-                ErrorMessage errorMessage = objectMapper.readValue(response.getBody(), ErrorMessage.class);
-                throw new ConflictRuntimeException(errorMessage);
+                SimpleErrorResponse validationErrorResponse = objectMapper.readValue(response.getBody(), SimpleErrorResponse.class);
+                throw new ConflictRuntimeException(validationErrorResponse);
             }
             if (statusCode == HttpStatus.BAD_REQUEST){
-                ErrorMessage errorMessage = objectMapper.readValue(response.getBody(), ErrorMessage.class);
-                throw new NotValidSongMetaDataRuntimeException(errorMessage);
+                ValidationErrorResponse validationErrorResponse = objectMapper.readValue(response.getBody(), ValidationErrorResponse.class);
+                throw new NotValidSongMetaDataRuntimeException(validationErrorResponse);
             }
         }
 

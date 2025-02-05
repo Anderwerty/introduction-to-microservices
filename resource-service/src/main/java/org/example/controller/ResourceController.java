@@ -1,11 +1,11 @@
 package org.example.controller;
 
 import lombok.AllArgsConstructor;
-import org.example.service.validator.annotation.IdValidation;
 import org.example.service.validator.annotation.IdsValidation;
 import org.example.service.dto.Identifiable;
 import org.example.service.rest.ResourceRestService;
 import org.example.service.dto.Identifiables;
+import org.example.service.validator.annotation.PositiveNumberString;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -31,7 +31,7 @@ public class ResourceController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<byte[]> getBinaryAudioData(@PathVariable("id") @IdValidation String id) {
+    public ResponseEntity<byte[]> getBinaryAudioData(@PathVariable("id") @PositiveNumberString String id) {
 
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(new MediaType("audio","mpeg"));

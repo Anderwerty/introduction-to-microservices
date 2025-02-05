@@ -1,12 +1,11 @@
 package org.example.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.example.service.rest.dto.ErrorMessage;
+import org.example.service.rest.dto.SimpleErrorResponse;
 import org.example.service.rest.dto.SongMetaDataDto;
+import org.example.service.rest.dto.ValidationErrorResponse;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -48,7 +47,7 @@ class SongMetadataControllerTest {
 
     @Test
     void getSongMetaDataIfDataNotExist() throws Exception {
-        ErrorMessage errorMessage = new ErrorMessage(404, "Song metadata with id=[123] doesn't exist");
+        SimpleErrorResponse errorMessage = new SimpleErrorResponse(404, "Song metadata with id=123 doesn't exist");
 
         mockMvc.perform(get("/songs/" + NOT_EXISTED_ID).accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
@@ -58,8 +57,8 @@ class SongMetadataControllerTest {
 
     @Test
     void getSongMetaDataIfIdNotValid() throws Exception {
-        ErrorMessage errorMessage = new ErrorMessage(400, "Validation error",
-                Map.of("getSongMetaData.id", "Id [abc] is not int type"));
+        ValidationErrorResponse errorMessage = new ValidationErrorResponse(400,
+                Map.of("id", "ID must be a positive integer number in string format"));
 
         mockMvc.perform(get("/songs/" + INVALID_ID).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
@@ -69,8 +68,8 @@ class SongMetadataControllerTest {
 
     @Test
     void getSongMetaDataIfIdNegative() throws Exception {
-        ErrorMessage errorMessage = new ErrorMessage(400, "Validation error",
-                Map.of("getSongMetaData.id", "Id [-1] is not positive"));
+        ValidationErrorResponse errorMessage = new ValidationErrorResponse(400,
+                Map.of("id", "ID must be a positive integer number in string format"));
 
         mockMvc.perform(get("/songs/" + NEGATIVE_ID).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
@@ -80,8 +79,8 @@ class SongMetadataControllerTest {
 
     @Test
     void getSongMetaDataIfIdBlank() throws Exception {
-        ErrorMessage errorMessage = new ErrorMessage(400, "Validation error",
-                Map.of("getSongMetaData.id", "Id is null or blank"));
+        ValidationErrorResponse errorMessage = new ValidationErrorResponse(400,
+                Map.of("id", "ID must be a positive integer number in string format"));
 
         mockMvc.perform(get("/songs/" + BLANK_ID).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
@@ -123,7 +122,7 @@ class SongMetadataControllerTest {
                 .year("2023")
                 .build();
 
-        ErrorMessage errorMessage = new ErrorMessage(409, "Metadata for song with id [1] already exists");
+        SimpleErrorResponse errorMessage = new SimpleErrorResponse(409, "Metadata for song with id 1 already exists");
 
         mockMvc.perform(post("/songs")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -136,16 +135,52 @@ class SongMetadataControllerTest {
                 .andDo(MockMvcResultHandlers.print());
     }
 
-    @ParameterizedTest
-    @MethodSource("songMetaData")
-    void createMetadataShouldProvideErrorMessage(SongMetaDataDto request) throws Exception {
-        Map<String, String> details = Map.of("duration", "Format mm:ss, with leading zeros.",
-                "artist", "1-100 characters text",
-                "year", "YYYY format between 1900-2099.",
-                "album", "1-100 characters text",
-                "name", "1-100 characters text",
-                "id", "Numeric, must match an existing Resource ID.");
-        ErrorMessage errorMessage = new ErrorMessage(400, "Validation error", details);
+    @Test
+    void createMetadataShouldProvideErrorMessageForNullFields() throws Exception {
+        Map<String, String> details = Map.of("duration", "Song duration is required",
+                "artist", "Song artist name is required",
+                "year", "Song year publishing is required",
+                "album", "Song album name is required",
+                "name", "Song name is required",
+                "id", "Resource ID is required");
+        SongMetaDataDto request = SongMetaDataDto.builder()
+                .id(null)
+                .artist(null)
+                .name(null)
+                .album(null)
+                .duration(null)
+                .year(null)
+                .build();
+        ValidationErrorResponse errorMessage = new ValidationErrorResponse(400,  details);
+
+        mockMvc.perform(post("/songs")
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(request))
+
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(content().json(mapper.writeValueAsString(errorMessage)))
+                .andDo(MockMvcResultHandlers.print());
+    }
+
+    @Test
+    void createMetadataShouldProvideErrorMessageForNotValidFields() throws Exception {
+        Map<String, String> details = Map.of("duration", "Song duration must have format mm:ss, with leading zeros",
+                "artist", "Song artist name must be between 1 and 100 symbols",
+                "year", "Song year publishing must have YYYY format between 1900-2099",
+                "album", "Song album name must be between 1 and 100 symbols",
+                "name", "Song name must be between 1 and 100 symbols",
+                "id", "Resource ID must be a positive number");
+        SongMetaDataDto request = SongMetaDataDto.builder()
+                .id(-1)
+                .artist("")
+                .name("")
+                .album("")
+                .duration("")
+                .year("")
+                .build();
+        ValidationErrorResponse errorMessage = new ValidationErrorResponse(400,  details);
 
         mockMvc.perform(post("/songs")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -194,7 +229,7 @@ class SongMetadataControllerTest {
 
     @Test
     void deleteShouldReturnEmptyListOfIdsForNotExistIds() throws Exception {
-        ErrorMessage errorMessage = new ErrorMessage(400, "Too long ids parameter length [31]");
+        SimpleErrorResponse errorMessage = new SimpleErrorResponse(400, "Too long ids parameter length 31 ");
 
         mockMvc.perform(delete("/songs")
                         .accept(MediaType.APPLICATION_JSON)
@@ -207,7 +242,7 @@ class SongMetadataControllerTest {
 
     @Test
     void deleteShouldReturnErrorIfIdsContainsNegativeValue() throws Exception {
-        ErrorMessage errorMessage = new ErrorMessage(400, "Id [-200] is not a positive int");
+        SimpleErrorResponse errorMessage = new SimpleErrorResponse(400, "Id -200 is not a positive int");
 
         mockMvc.perform(delete("/songs")
                         .accept(MediaType.APPLICATION_JSON)
@@ -220,7 +255,7 @@ class SongMetadataControllerTest {
 
     @Test
     void deleteShouldReturnErrorIfIdsContainsNotNumericValue() throws Exception {
-        ErrorMessage errorMessage = new ErrorMessage(400, "Id [abc] is not a number");
+        SimpleErrorResponse errorMessage = new SimpleErrorResponse(400, "Id abc is not a number");
 
         mockMvc.perform(delete("/songs")
                         .accept(MediaType.APPLICATION_JSON)

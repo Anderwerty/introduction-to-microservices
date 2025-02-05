@@ -1,6 +1,5 @@
 package org.example.service.client;
 
-import lombok.extern.log4j.Log4j2;
 import org.example.service.dto.Identifiable;
 import org.example.service.dto.Identifiables;
 import org.example.service.dto.SongMetadataDto;
@@ -12,7 +11,6 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.List;
 
-@Log4j2
 @Component
 public class SongRestClientImpl implements SongClient {
     private final String basePath;
@@ -48,11 +46,9 @@ public class SongRestClientImpl implements SongClient {
                 .queryParam("id", String.join(",", ids.stream().map(String::valueOf).toList()))
                 .toUriString();
 
-        log.info("Url: " + fullUrl);
         ResponseEntity<Identifiables> responseEntity =
                 restTemplate.exchange(fullUrl, HttpMethod.DELETE, httpEntity, Identifiables.class);
 
-        log.info(responseEntity);
         return responseEntity.getBody();
     }
 }

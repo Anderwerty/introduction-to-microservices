@@ -8,7 +8,7 @@ import org.example.service.rest.dto.SongMetaDataDto;
 public interface SongMetaDataRestService {
     Identifiable<Integer> storeMetaData(SongMetaDataDto songMetaDataDto);
 
-    SongMetaDataDto getMetaData(String id) throws IllegalArgumentException, NotFoundException;
+    SongMetaDataDto getMetaData(String id) throws NotFoundException;
 
     Identifiables<Integer> deleteMetaData(String ids);
 }

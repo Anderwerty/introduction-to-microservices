@@ -15,6 +15,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Map;
 
 import static org.example.DataUtils.FILE_BYTES;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -51,42 +52,21 @@ class ResourceRestServiceImplTest {
 
         IllegalResourceException exception = assertThrows(IllegalResourceException.class,
                 () -> resourceRestService.storeFile(FILE_BYTES));
-        assertEquals(exception.getMessage(), "Not valid content type [invalid_content_type]");
+        assertEquals(exception.getDetails(), Map.of("file","Not valid content type invalid_content_type"));
     }
 
     @Test
     void storeMetaDataShouldNotStoreIfNullArray() {
         IllegalResourceException exception = assertThrows(IllegalResourceException.class,
                 () -> resourceRestService.storeFile(null));
-        assertEquals(exception.getMessage(), "File doesn't exist");
+        assertEquals(exception.getDetails(), Map.of("file","File doesn't exist"));
     }
 
     @Test
     void storeMetaDataShouldNotStoreIfArrayIsEmpty() {
         IllegalResourceException exception = assertThrows(IllegalResourceException.class,
                 () -> resourceRestService.storeFile(new byte[0]));
-        assertEquals(exception.getMessage(), "File is empty");
-    }
-
-    @Test
-    void getMetaDataShouldThrowExceptionWhenIdIsNotInteger() {
-        IllegalArgumentException exception =
-                assertThrows(IllegalArgumentException.class, () -> resourceRestService.getAudioData("abc"));
-        assertEquals("Id [abc] is not int type", exception.getMessage());
-    }
-
-    @Test
-    void getMetaDataShouldThrowExceptionWhenIdZero() {
-        IllegalArgumentException exception =
-                assertThrows(IllegalArgumentException.class, () -> resourceRestService.getAudioData("0"));
-        assertEquals("Id [0] is zero", exception.getMessage());
-    }
-
-    @Test
-    void getMetaDataShouldThrowExceptionWhenIdNegativeInteger() {
-        IllegalArgumentException exception =
-                assertThrows(IllegalArgumentException.class, () -> resourceRestService.getAudioData("-1"));
-        assertEquals("Id [-1] is negative", exception.getMessage());
+        assertEquals(exception.getDetails(), Map.of("file","File is empty"));
     }
 
     @Test
