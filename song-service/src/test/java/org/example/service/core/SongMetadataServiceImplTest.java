@@ -4,7 +4,6 @@ import org.example.entity.SongMetadata;
 import org.example.repository.MetadataRepository;
 import org.example.service.exception.NotFoundException;
 import org.example.service.exception.SongAlreadyExistRuntimeException;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -38,7 +37,7 @@ class SongMetadataServiceImplTest {
         Integer actualId = songMetaDataService.storeMetaData(songMetaData);
         Integer expectedId = 1;
 
-        assertEquals(actualId, expectedId);
+        assertEquals(expectedId, actualId);
     }
 
     @Test
@@ -48,7 +47,7 @@ class SongMetadataServiceImplTest {
 
         SongAlreadyExistRuntimeException exception = assertThrows(SongAlreadyExistRuntimeException.class,
                 () -> songMetaDataService.storeMetaData(songMetaData));
-        assertEquals("Metadata for song with id 1 already exists", exception.getMessage());
+        assertEquals("Metadata for resource ID=1 already exists", exception.getMessage());
 
     }
 
@@ -58,7 +57,7 @@ class SongMetadataServiceImplTest {
         when(metadataRepository.findById(1)).thenReturn(Optional.of(songMetaData));
 
         SongMetadata actual = songMetaDataService.getMetaData(1);
-        assertEquals(actual, songMetaData);
+        assertEquals(songMetaData, actual);
     }
 
     @Test
@@ -66,7 +65,7 @@ class SongMetadataServiceImplTest {
         when(metadataRepository.findById(1)).thenReturn(Optional.empty());
 
         NotFoundException exception = assertThrows(NotFoundException.class, () -> songMetaDataService.getMetaData(1));
-        assertEquals(exception.getMessage(), "Song metadata with id=1 doesn't exist");
+        assertEquals("Song metadata for ID=1 not found", exception.getMessage());
     }
 
     @Test
@@ -76,7 +75,7 @@ class SongMetadataServiceImplTest {
 
         List<Integer> actualIds = songMetaDataService.deleteAll(ids);
         List<Integer> existedIds = List.of(1, 2);
-        assertEquals(actualIds, existedIds);
+        assertEquals(existedIds, actualIds);
         verify(metadataRepository).deleteAllById(existedIds);
     }
 

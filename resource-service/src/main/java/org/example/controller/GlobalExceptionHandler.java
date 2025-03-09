@@ -2,55 +2,48 @@ package org.example.controller;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
-import jakarta.validation.Path;
 import lombok.extern.log4j.Log4j2;
 import org.example.service.dto.SimpleErrorResponse;
-import org.example.service.exception.*;
 import org.example.service.dto.ValidationErrorResponse;
+import org.example.service.exception.ConflictRuntimeException;
+import org.example.service.exception.IllegalResourceException;
+import org.example.service.exception.NotValidSongMetaDataRuntimeException;
+import org.example.service.exception.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import java.util.Map;
-import java.util.stream.Collectors;
-
 @RestControllerAdvice
 @Log4j2
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler({
-            IllegalResourceException.class,
-            IllegalParameterException.class,
-            NotValidSongMetaDataRuntimeException.class,
-            ConstraintViolationException.class})
+    @ExceptionHandler(ConstraintViolationException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ValidationErrorResponse notValidResource(RuntimeException exception) {
+    public SimpleErrorResponse badRequest(ConstraintViolationException exception) {
         log.debug(exception);
-        if (exception instanceof ConstraintViolationException e) {
-            Map<String, String> details = e.getConstraintViolations().stream()
-                    .collect(Collectors.toMap(x -> getLastNode(x.getPropertyPath()).toString(),
-                            ConstraintViolation::getMessage, (a, b) -> b));
-            return new ValidationErrorResponse(String.valueOf(HttpStatus.BAD_REQUEST.value()), details);
-        }
-        if (exception instanceof NotValidSongMetaDataRuntimeException e) {
-            return new ValidationErrorResponse(HttpStatus.BAD_REQUEST.value(), e.getValidationErrorResponse().getDetails());
-        }
 
-        if (exception instanceof IllegalParameterException e) {
-            return new ValidationErrorResponse(HttpStatus.BAD_REQUEST.value(), e.getDetails());
-        }
-
-        return new ValidationErrorResponse(String.valueOf(HttpStatus.BAD_REQUEST.value()), ((IllegalResourceException) exception).getDetails());
+        String message = exception.getConstraintViolations().stream()
+                .findAny()
+                .map(ConstraintViolation::getMessage)
+                .orElse(null);
+        return new SimpleErrorResponse(String.valueOf(HttpStatus.BAD_REQUEST.value()), message);
     }
 
+    @ExceptionHandler({IllegalResourceException.class})
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public SimpleErrorResponse badRequestOnIllegalResourceException(IllegalResourceException exception) {
+        log.debug(exception);
 
-    private static Path.Node getLastNode(Path propertyPath) {
-        Path.Node lastNode = null;
-        for (Path.Node node : propertyPath) {
-            lastNode = node;
-        }
-        return lastNode;
+        return new SimpleErrorResponse(HttpStatus.BAD_REQUEST.value(), exception.getMessage());
+    }
+
+    @ExceptionHandler({NotValidSongMetaDataRuntimeException.class})
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ValidationErrorResponse badRequestOnNotValidSongMetaDataRuntimeException(NotValidSongMetaDataRuntimeException exception) {
+        log.debug(exception);
+
+        return new ValidationErrorResponse(HttpStatus.BAD_REQUEST.value(), exception.getValidationErrorResponse().getDetails());
     }
 
     @ExceptionHandler({ResourceNotFoundException.class})

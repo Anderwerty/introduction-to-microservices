@@ -28,7 +28,7 @@ public class ResourceServiceImpl implements ResourceService {
     @Override
     public byte[] getAudioData(Integer id) {
         return resourceRepository.findById(id).map(Resource::getFile)
-                .orElseThrow(() -> new ResourceNotFoundException(String.format("Resources with id=%d doesn't exist", id)));
+                .orElseThrow(() -> new ResourceNotFoundException(String.format("Resource with ID=%d not found", id)));
     }
 
     @Transactional

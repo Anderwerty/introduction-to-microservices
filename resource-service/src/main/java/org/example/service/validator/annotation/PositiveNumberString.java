@@ -8,10 +8,10 @@ import java.lang.annotation.*;
 
 @Documented
 @Constraint(validatedBy = PositiveNumberStringValidator.class)
-@Target({ElementType.FIELD, ElementType.PARAMETER})
+@Target({ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface PositiveNumberString {
-    String message() default "ID must be a positive integer number in string format";
+    String message() default "Invalid value '%s' for ID. Must be a positive integer";
 
     Class<?>[] groups() default {};
 

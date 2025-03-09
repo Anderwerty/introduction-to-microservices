@@ -15,7 +15,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
-import java.util.Map;
 
 import static org.example.DataUtils.FILE_BYTES;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -52,21 +51,21 @@ class ResourceRestServiceImplTest {
 
         IllegalResourceException exception = assertThrows(IllegalResourceException.class,
                 () -> resourceRestService.storeFile(FILE_BYTES));
-        assertEquals(exception.getDetails(), Map.of("file","Not valid content type invalid_content_type"));
+        assertEquals("Invalid file format: invalid_content_type. Only MP3 files are allowed", exception.getMessage());
     }
 
     @Test
     void storeMetaDataShouldNotStoreIfNullArray() {
         IllegalResourceException exception = assertThrows(IllegalResourceException.class,
                 () -> resourceRestService.storeFile(null));
-        assertEquals(exception.getDetails(), Map.of("file","File doesn't exist"));
+        assertEquals("File doesn't exist", exception.getMessage());
     }
 
     @Test
     void storeMetaDataShouldNotStoreIfArrayIsEmpty() {
         IllegalResourceException exception = assertThrows(IllegalResourceException.class,
                 () -> resourceRestService.storeFile(new byte[0]));
-        assertEquals(exception.getDetails(), Map.of("file","File is empty"));
+        assertEquals("File is empty", exception.getMessage());
     }
 
     @Test
@@ -74,7 +73,7 @@ class ResourceRestServiceImplTest {
         when(resourceService.getAudioData(1)).thenReturn(FILE_BYTES);
 
         byte[] fileBytes = resourceRestService.getAudioData("1");
-        assertEquals(fileBytes, FILE_BYTES);
+        assertEquals(FILE_BYTES, fileBytes);
     }
 
     @Test
@@ -84,14 +83,14 @@ class ResourceRestServiceImplTest {
         when(resourceService.deleteAll(ids)).thenReturn(removedItemIds);
 
         Identifiables<Integer> actual = resourceRestService.deleteResources("1,2,3");
-        assertEquals(actual, new Identifiables<>(removedItemIds));
+        assertEquals(new Identifiables<>(removedItemIds), actual);
     }
 
     @ParameterizedTest
     @NullAndEmptySource
     void deleteShouldReturnEmptyList(String ids) {
         Identifiables<Integer> actual = resourceRestService.deleteResources(ids);
-        assertEquals(actual.getIds().size(), 0);
+        assertEquals(0, actual.getIds().size());
     }
 
 }

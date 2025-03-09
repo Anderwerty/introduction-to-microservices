@@ -70,7 +70,7 @@ class SongRestClientImplTest {
     @Test
     void saveSongMetadataShouldNotSaveNotValidData() throws Exception {
         SongMetadataDto metadataDto = DataUtils.initSongMetaDataDto(null);
-        ValidationErrorResponse validationErrorResponse = new ValidationErrorResponse(400, Map.of("id","ID must be not null"));
+        ValidationErrorResponse validationErrorResponse = new ValidationErrorResponse(400, Map.of("id", "ID must be not null"));
         mockServer.expect(ExpectedCount.once(),
                         requestTo(new URI("http://song-service/songs")))
                 .andExpect(method(HttpMethod.POST))
@@ -140,12 +140,12 @@ class SongRestClientImplTest {
         Identifiables<Integer> identifiables = songRestClient.deleteSongsMetadata(List.of(1, 2, 3));
 
         assertNotNull(identifiables);
-        assertEquals(identifiables.getIds(), List.of(1, 2));
+        assertEquals(List.of(1, 2), identifiables.getIds());
     }
 
     @Test
     void deleteSongsMetadataShouldNotDeleteDataDueNotValidInput() throws Exception {
-        ValidationErrorResponse validationErrorResponse = new ValidationErrorResponse(400, Map.of("id","Id -1 is positive int"));
+        ValidationErrorResponse validationErrorResponse = new ValidationErrorResponse(400, Map.of("id", "Id -1 is positive int"));
 
         URI uri = UriComponentsBuilder.fromUriString("http://song-service/songs")
                 .queryParam("id", "-1,2")
@@ -162,7 +162,7 @@ class SongRestClientImplTest {
         NotValidSongMetaDataRuntimeException exception = assertThrows(NotValidSongMetaDataRuntimeException.class,
                 () -> songRestClient.deleteSongsMetadata(List.of(-1, 2)));
 
-        assertEquals(exception.getValidationErrorResponse(), validationErrorResponse);
+        assertEquals(validationErrorResponse, exception.getValidationErrorResponse());
     }
 }
 

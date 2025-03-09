@@ -2,7 +2,6 @@ package org.example.controller;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
-import jakarta.validation.Path;
 import org.example.service.exception.NotFoundException;
 import org.example.service.exception.SongAlreadyExistRuntimeException;
 import org.example.service.rest.dto.SimpleErrorResponse;
@@ -21,27 +20,23 @@ import java.util.stream.Collectors;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler({ConstraintViolationException.class, MethodArgumentNotValidException.class})
+    @ExceptionHandler(MethodArgumentNotValidException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ValidationErrorResponse notValidResource(Exception exception) {
-        if (exception instanceof ConstraintViolationException e) {
-            Map<String, String> details = e.getConstraintViolations().stream()
-                    .collect(Collectors.toMap(x -> getLastNode(x.getPropertyPath()).toString(), ConstraintViolation::getMessage, (a, b) -> b));
-            return new ValidationErrorResponse(HttpStatus.BAD_REQUEST.value(), details);
-        } else {
-            MethodArgumentNotValidException e = (MethodArgumentNotValidException) exception;
-            Map<String, String> details = e.getBindingResult().getFieldErrors().stream()
-                    .collect(Collectors.toMap(FieldError::getField, DefaultMessageSourceResolvable::getDefaultMessage, (a, b) -> b));
-            return new ValidationErrorResponse(HttpStatus.BAD_REQUEST.value(), details);
-        }
+    public ValidationErrorResponse badRequestForMethodArgumentNotValidException(MethodArgumentNotValidException exception) {
+        Map<String, String> details = exception.getBindingResult().getFieldErrors().stream()
+                .collect(Collectors.toMap(FieldError::getField,
+                        DefaultMessageSourceResolvable::getDefaultMessage, (a, b) -> b));
+        return new ValidationErrorResponse(HttpStatus.BAD_REQUEST.value(), details);
     }
 
-    private static Path.Node getLastNode(Path propertyPath) {
-        Path.Node lastNode = null;
-        for (Path.Node node : propertyPath) {
-            lastNode = node;
-        }
-        return lastNode;
+    @ExceptionHandler(ConstraintViolationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public SimpleErrorResponse badRequestForConstraintViolationException(ConstraintViolationException exception) {
+        String message = exception.getConstraintViolations().stream()
+                .findAny()
+                .map(ConstraintViolation::getMessage)
+                .orElse(null);
+        return new SimpleErrorResponse(String.valueOf(HttpStatus.BAD_REQUEST.value()), message);
     }
 
     @ExceptionHandler(NotFoundException.class)
@@ -55,6 +50,5 @@ public class GlobalExceptionHandler {
     public SimpleErrorResponse resourceConflict(SongAlreadyExistRuntimeException exception) {
         return new SimpleErrorResponse(HttpStatus.CONFLICT.value(), exception.getMessage());
     }
-
 
 }

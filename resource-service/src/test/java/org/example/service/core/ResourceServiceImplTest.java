@@ -33,7 +33,7 @@ class ResourceServiceImplTest {
         Integer actualId = resourceService.storeFile(FILE_BYTES);
         Integer expectedId = 1;
 
-        assertEquals(actualId, expectedId);
+        assertEquals(expectedId, actualId);
     }
 
     @Test
@@ -41,7 +41,7 @@ class ResourceServiceImplTest {
         when(resourceRepository.findById(1)).thenReturn(Optional.of(RESOURCE_WITH_ID));
 
         byte[] actual = resourceService.getAudioData(1);
-        assertEquals(actual, FILE_BYTES);
+        assertEquals(FILE_BYTES, actual);
     }
 
     @Test
@@ -49,7 +49,7 @@ class ResourceServiceImplTest {
         when(resourceRepository.findById(1)).thenReturn(Optional.empty());
 
         ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () -> resourceService.getAudioData(1));
-        assertEquals(exception.getMessage(), "Resources with id=1 doesn't exist");
+        assertEquals("Resource with ID=1 not found", exception.getMessage());
     }
 
     @Test

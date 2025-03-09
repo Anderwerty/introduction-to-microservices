@@ -27,12 +27,12 @@ class Mp3MetadataExtracterTest {
                 .year("2023")
                 .build();
 
-        assertEquals(actual, expected);
+        assertEquals(expected, actual);
     }
 
     @Test
     void testGetMime() {
         String mimeType = extracter.getMimeType(FILE_BYTES);
-        assertEquals(mimeType, "audio/mpeg");
+        assertEquals("audio/mpeg", mimeType);
     }
 }

@@ -16,7 +16,7 @@ class SongMetadataMapperImplTest {
     void mapToEntityShouldReturnEntity() {
         SongMetadata songMetaData = songMetaDataMapper.mapToEntity(DataUtils.initSongMetaDataDto(1));
 
-        assertEquals(songMetaData, DataUtils.initSongMetaData(1));
+        assertEquals(DataUtils.initSongMetaData(1), songMetaData);
     }
 
     @Test
@@ -30,14 +30,14 @@ class SongMetadataMapperImplTest {
     void mapToEntityShouldReturnEntityIfNullYear() {
         SongMetadata songMetaData = songMetaDataMapper.mapToEntity(DataUtils.initSongMetaDataDto(1, null));
 
-        assertEquals(songMetaData, DataUtils.initSongMetaData(1, null));
+        assertEquals(DataUtils.initSongMetaData(1, null), songMetaData);
     }
 
     @Test
     void mapToDtoShouldReturnDto() {
         SongMetaDataDto songMetaData = songMetaDataMapper.mapToDto(DataUtils.initSongMetaData(1));
 
-        assertEquals(songMetaData, DataUtils.initSongMetaDataDto(1));
+        assertEquals(DataUtils.initSongMetaDataDto(1), songMetaData);
     }
 
     @Test
@@ -51,7 +51,7 @@ class SongMetadataMapperImplTest {
     void mapToDtoShouldReturnDtoIfYeIsNull() {
         SongMetaDataDto songMetaData = songMetaDataMapper.mapToDto(DataUtils.initSongMetaData(1, null));
 
-        assertEquals(songMetaData, DataUtils.initSongMetaDataDto(1, null));
+        assertEquals(DataUtils.initSongMetaDataDto(1, null), songMetaData);
     }
 
 }

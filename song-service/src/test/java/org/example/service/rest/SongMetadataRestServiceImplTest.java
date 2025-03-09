@@ -62,14 +62,14 @@ class SongMetadataRestServiceImplTest {
         when(songMetaDataService.deleteAll(ids)).thenReturn(removedItemIds);
 
         Identifiables<Integer> actual = songMetaDataRestService.deleteMetaData("1,2,3");
-        assertEquals(actual, new Identifiables<>(removedItemIds));
+        assertEquals(new Identifiables<>(removedItemIds), actual);
     }
 
     @ParameterizedTest
     @NullAndEmptySource
     void deleteShouldReturnEmptyList(String ids) {
         Identifiables<Integer> actual = songMetaDataRestService.deleteMetaData(ids);
-        assertEquals(actual.getIds().size(), 0);
+        assertEquals(0, actual.getIds().size());
     }
 
 }
