@@ -6,7 +6,7 @@ RUN mvn dependency:go-offline
 COPY src ./src
 RUN mvn clean package -Dmaven.test.skip=true
 
-FROM eclipse-temurin:17-jre
+FROM --platform=linux/amd64 eclipse-temurin:17-jre-alpine-3.21
 WORKDIR /app
 COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8081
