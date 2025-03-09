@@ -7,7 +7,6 @@ import org.example.service.core.ResourceService;
 import org.example.service.dto.Identifiable;
 import org.example.service.dto.Identifiables;
 import org.example.service.dto.SongMetadataDto;
-import org.example.service.exception.IllegalParameterException;
 import org.example.service.exception.IllegalResourceException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,7 +14,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 @Transactional
 @AllArgsConstructor
@@ -69,16 +67,16 @@ public class ResourceRestServiceImpl implements ResourceRestService {
 
     private void validateFile(byte[] bytes) {
         if (bytes == null) {
-            throw new IllegalResourceException(Map.of("file", "File doesn't exist"));
+            throw new IllegalResourceException("File doesn't exist");
         }
         if (bytes.length == 0) {
-            throw new IllegalResourceException(Map.of("file", "File is empty"));
+            throw new IllegalResourceException("File is empty");
         }
         String mimeType = metadataExtracter.getMimeType(bytes);
         boolean isNotSupported = Arrays.stream(ALLOWED_CONTENT_TYPES).noneMatch(x -> x.equals(mimeType));
         if (isNotSupported) {
-            String message = String.format("Not valid content type %s", mimeType);
-            throw new IllegalResourceException(Map.of("file", message));
+            String message = String.format("Invalid file format: %s. Only MP3 files are allowed", mimeType);
+            throw new IllegalResourceException(message);
         }
     }
 

@@ -22,7 +22,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.Arrays;
-import java.util.Map;
 import java.util.stream.Stream;
 
 import static org.example.DataUtils.FILE_BYTES;
@@ -62,7 +61,7 @@ class ResourceControllerTest {
 
     @Test
     void getSongMetaDataIfDataNotExist() throws Exception {
-        SimpleErrorResponse errorResponse = new SimpleErrorResponse("404", "Resources with id=123 doesn't exist");
+        SimpleErrorResponse errorResponse = new SimpleErrorResponse("404", "Resource with ID=123 not found");
 
         mockMvc.perform(get("/resources/" + NOT_EXISTED_ID).accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
@@ -73,8 +72,7 @@ class ResourceControllerTest {
     @Test
     void getSongMetaDataIfIdNull() throws Exception {
         String id = null;
-        Map<String, String> details = Map.of("id","ID must be a positive integer number in string format");
-        ValidationErrorResponse errorResponse = new ValidationErrorResponse("400",  details);
+        SimpleErrorResponse errorResponse = new SimpleErrorResponse("400",  "Invalid value 'null' for ID. Must be a positive integer");
 
         mockMvc.perform(get("/resources/" + id).accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
@@ -85,8 +83,7 @@ class ResourceControllerTest {
     @Test
     void getSongMetaDataIfIdBlank() throws Exception {
         String id = "  ";
-        Map<String, String> details = Map.of("id", "ID must be a positive integer number in string format");
-        ValidationErrorResponse validationErrorResponse = new ValidationErrorResponse("400",  details);
+        SimpleErrorResponse validationErrorResponse = new SimpleErrorResponse("400",  "Invalid value '  ' for ID. Must be a positive integer");
 
         mockMvc.perform(get("/resources/" + id).accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
@@ -96,17 +93,17 @@ class ResourceControllerTest {
 
     @ParameterizedTest
     @MethodSource("idToErrorMessage")
-    void getSongMetaDataIfIdNotValid(String id, ValidationErrorResponse validationErrorResponse) throws Exception {
+    void getSongMetaDataIfIdNotValid(String id, SimpleErrorResponse errorResponse) throws Exception {
         mockMvc.perform(get("/resources/" + id).contentType("audio/mpeg"))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().json(mapper.writeValueAsString(validationErrorResponse)))
+                .andExpect(content().json(mapper.writeValueAsString(errorResponse)))
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));
     }
 
     private static Stream<Arguments> idToErrorMessage() {
         return Stream.of(
-                Arguments.of("abc", new ValidationErrorResponse(400,  Map.of("id", "ID must be a positive integer number in string format"))),
-                Arguments.of("-1", new ValidationErrorResponse(400, Map.of("id", "ID must be a positive integer number in string format")))
+                Arguments.of("abc", new SimpleErrorResponse(400,  "Invalid value 'abc' for ID. Must be a positive integer")),
+                Arguments.of("-1", new SimpleErrorResponse(400, "Invalid value '-1' for ID. Must be a positive integer"))
         );
     }
 
@@ -164,7 +161,7 @@ class ResourceControllerTest {
 
     @Test
     void createMetadataWithNotExpectedContentTypeToGetBadRequest() throws Exception {
-        ValidationErrorResponse errorResponse = new ValidationErrorResponse(400,Map.of("file","Not valid content type application/pdf") );
+        SimpleErrorResponse errorResponse = new SimpleErrorResponse(400,"Invalid file format: application/pdf. Only MP3 files are allowed" );
         byte[] fileBytes = readFile("src/test/resources/music.pdf");
         MockRestServiceServer.createServer(restTemplate);
 

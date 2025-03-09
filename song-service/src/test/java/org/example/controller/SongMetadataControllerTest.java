@@ -47,7 +47,8 @@ class SongMetadataControllerTest {
 
     @Test
     void getSongMetaDataIfDataNotExist() throws Exception {
-        SimpleErrorResponse errorMessage = new SimpleErrorResponse(404, "Song metadata with id=123 doesn't exist");
+        SimpleErrorResponse errorMessage = new SimpleErrorResponse(404,
+                "Song metadata for ID=123 not found");
 
         mockMvc.perform(get("/songs/" + NOT_EXISTED_ID).accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
@@ -57,8 +58,8 @@ class SongMetadataControllerTest {
 
     @Test
     void getSongMetaDataIfIdNotValid() throws Exception {
-        ValidationErrorResponse errorMessage = new ValidationErrorResponse(400,
-                Map.of("id", "ID must be a positive integer number in string format"));
+        SimpleErrorResponse errorMessage = new SimpleErrorResponse(400,
+              "ID must be a positive integer number in string format");
 
         mockMvc.perform(get("/songs/" + INVALID_ID).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
@@ -68,8 +69,8 @@ class SongMetadataControllerTest {
 
     @Test
     void getSongMetaDataIfIdNegative() throws Exception {
-        ValidationErrorResponse errorMessage = new ValidationErrorResponse(400,
-                Map.of("id", "ID must be a positive integer number in string format"));
+        SimpleErrorResponse errorMessage = new SimpleErrorResponse(400,
+                "ID must be a positive integer number in string format");
 
         mockMvc.perform(get("/songs/" + NEGATIVE_ID).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
@@ -79,8 +80,7 @@ class SongMetadataControllerTest {
 
     @Test
     void getSongMetaDataIfIdBlank() throws Exception {
-        ValidationErrorResponse errorMessage = new ValidationErrorResponse(400,
-                Map.of("id", "ID must be a positive integer number in string format"));
+        SimpleErrorResponse errorMessage = new SimpleErrorResponse(400,"ID must be a positive integer number in string format");
 
         mockMvc.perform(get("/songs/" + BLANK_ID).contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
@@ -122,7 +122,7 @@ class SongMetadataControllerTest {
                 .year("2023")
                 .build();
 
-        SimpleErrorResponse errorMessage = new SimpleErrorResponse(409, "Metadata for song with id 1 already exists");
+        SimpleErrorResponse errorMessage = new SimpleErrorResponse(409, "Metadata for resource ID=1 already exists");
 
         mockMvc.perform(post("/songs")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -229,7 +229,8 @@ class SongMetadataControllerTest {
 
     @Test
     void deleteShouldReturnEmptyListOfIdsForNotExistIds() throws Exception {
-        SimpleErrorResponse errorMessage = new SimpleErrorResponse(400, "Too long ids parameter length 31 ");
+        SimpleErrorResponse errorMessage = new SimpleErrorResponse(400,
+                "CSV string is too long: received 31 characters, maximum allowed is 200");
 
         mockMvc.perform(delete("/songs")
                         .accept(MediaType.APPLICATION_JSON)
@@ -242,7 +243,7 @@ class SongMetadataControllerTest {
 
     @Test
     void deleteShouldReturnErrorIfIdsContainsNegativeValue() throws Exception {
-        SimpleErrorResponse errorMessage = new SimpleErrorResponse(400, "Id -200 is not a positive int");
+        SimpleErrorResponse errorMessage = new SimpleErrorResponse(400, "Invalid ID format: '-200'. Only positive integers are allowed");
 
         mockMvc.perform(delete("/songs")
                         .accept(MediaType.APPLICATION_JSON)
@@ -255,7 +256,7 @@ class SongMetadataControllerTest {
 
     @Test
     void deleteShouldReturnErrorIfIdsContainsNotNumericValue() throws Exception {
-        SimpleErrorResponse errorMessage = new SimpleErrorResponse(400, "Id abc is not a number");
+        SimpleErrorResponse errorMessage = new SimpleErrorResponse(400, "Invalid ID format: 'abc'. Only positive integers are allowed");
 
         mockMvc.perform(delete("/songs")
                         .accept(MediaType.APPLICATION_JSON)

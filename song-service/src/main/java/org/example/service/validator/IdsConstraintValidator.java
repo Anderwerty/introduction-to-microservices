@@ -25,28 +25,20 @@ public class IdsConstraintValidator implements ConstraintValidator<IdsValidation
         int length = idsQueryParameter.length();
         if (length >= idsParameterLengthLimit) {
             context.disableDefaultConstraintViolation();
-            context.buildConstraintViolationWithTemplate(String.format("Too long ids parameter length %d, should be not more than %d", length, idsParameterLengthLimit))
+            context.buildConstraintViolationWithTemplate(String.format("CSV string is too long: received %d characters, maximum allowed is %d", length, idsParameterLengthLimit))
                     .addConstraintViolation();
             return false;
         }
 
         String[] ids = idsQueryParameter.split(",");
-        boolean isValid = true;
         for (String id : ids) {
-            if (!StringUtils.isNumeric(id)) {
+            if (!StringUtils.isNumeric(id) || Integer.parseInt(id) <= 0) {
                 context.disableDefaultConstraintViolation();
-                context.buildConstraintViolationWithTemplate(String.format("Id %s is not a number", id))
+                context.buildConstraintViolationWithTemplate(String.format("Invalid ID format: '%s'. Only positive integers are allowed", id))
                         .addConstraintViolation();
-                isValid = false;
-                continue;
-            }
-            if (Integer.parseInt(id) <= 0) {
-                context.disableDefaultConstraintViolation();
-                context.buildConstraintViolationWithTemplate(String.format("Id %s is not a positive int", id))
-                        .addConstraintViolation();
-                isValid = false;
+                return false;
             }
         }
-        return isValid;
+        return true;
     }
 }

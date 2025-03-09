@@ -43,8 +43,8 @@ public class ResourceController {
     }
 
     @DeleteMapping
-    public Identifiables<Integer> deleteResources(@RequestParam(required = false, name = "id") @IdsValidation String ids) {
-        return resourceService.deleteResources(ids);
+    public Identifiables<Integer> deleteResources(@RequestParam(required = false, name = "id") @IdsValidation String id) {
+        return resourceService.deleteResources(id);
     }
 
 }
