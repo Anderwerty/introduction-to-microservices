@@ -13,18 +13,18 @@ import java.util.List;
 
 @Component
 public class SongRestClientImpl implements SongClient {
-    private final String basePath;
-
+    private final String songServiceName;
     private final RestTemplate restTemplate;
 
-    public SongRestClientImpl(RestTemplate restTemplate, @Value("${song.service.base.path}") String basePath) {
+
+    public SongRestClientImpl(RestTemplate restTemplate, @Value("${song.service.name}") String songServiceName) {
         this.restTemplate = restTemplate;
-        this.basePath = basePath;
+        this.songServiceName = songServiceName;
     }
 
     @Override
     public Identifiable<Integer> saveSongMetadata(SongMetadataDto songMetadataDto) {
-        String url = basePath + "songs";
+        String url = "http://" + songServiceName + "/songs";
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -37,7 +37,7 @@ public class SongRestClientImpl implements SongClient {
 
     @Override
     public Identifiables<Integer> deleteSongsMetadata(List<Integer> ids) {
-        String url = basePath + "songs";
+        String url = "http://" + songServiceName + "/songs";
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
