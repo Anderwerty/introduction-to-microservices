@@ -1,4 +1,4 @@
-INSERT INTO resources(file) VALUES (X'31323334');  -- '1234' as hex
-INSERT INTO resources(file) VALUES (X'3233');      -- '23' as hex
-INSERT INTO resources(file) VALUES (X'33343536');  -- '3456' as hex
-INSERT INTO resources(file) VALUES (X'343536373839'); -- '456789' as hex
+INSERT INTO resources(file_url) VALUES ('https://my-bucket.s3.amazonaws.com/file1.bin');
+INSERT INTO resources(file_url) VALUES ('https://my-bucket.s3.amazonaws.com/file2.bin');
+INSERT INTO resources(file_url) VALUES ('https://my-bucket.s3.amazonaws.com/file3.bin');
+INSERT INTO resources(file_url) VALUES ('https://my-bucket.s3.amazonaws.com/file4.bin');

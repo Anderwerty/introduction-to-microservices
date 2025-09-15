@@ -1,4 +1,4 @@
 CREATE TABLE resources (
     id SERIAL PRIMARY KEY,
-    file BYTEA
+    file_url VARCHAR(255)
 );

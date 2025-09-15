@@ -2,5 +2,6 @@ target/
 .idea
 *.iml
 *.pptx
+localstack-data
 ### Mac OS ###
 .DS_Store

@@ -1,6 +1,5 @@
 package org.example.service.rest;
 
-import org.example.service.client.SongClient;
 import org.example.service.core.MetadataExtracter;
 import org.example.service.core.ResourceService;
 import org.example.service.exception.IllegalResourceException;
@@ -28,9 +27,6 @@ class ResourceRestServiceImplTest {
 
     @Mock
     private MetadataExtracter metadataExtracter;
-
-    @Mock
-    private SongClient songClient;
 
     @InjectMocks
     private ResourceRestServiceImpl resourceRestService;
