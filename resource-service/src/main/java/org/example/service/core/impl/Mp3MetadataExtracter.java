@@ -1,4 +1,4 @@
-package org.example.service.core;
+package org.example.service.core.impl;
 
 import lombok.AllArgsConstructor;
 import org.apache.tika.Tika;
@@ -8,6 +8,7 @@ import org.apache.tika.metadata.XMPDM;
 import org.apache.tika.parser.ParseContext;
 import org.apache.tika.parser.mp3.Mp3Parser;
 import org.apache.tika.sax.BodyContentHandler;
+import org.example.service.core.MetadataExtracter;
 import org.example.service.dto.SongMetadataDto;
 import org.springframework.stereotype.Component;
 import org.xml.sax.SAXException;

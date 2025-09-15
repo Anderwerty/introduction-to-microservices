@@ -3,6 +3,7 @@ version: '3.9'
 services:
   resource-db:
     image: postgres:16-alpine
+    platform: linux/arm64
     restart: always
     environment:
       POSTGRES_DB: resources_db
@@ -15,6 +16,7 @@ services:
 
   song-db:
     image: postgres:16-alpine
+    platform: linux/arm64
     restart: always
     environment:
       POSTGRES_DB: song_db
@@ -25,23 +27,46 @@ services:
     volumes:
       - ./init-scripts/song-db/init.sql:/docker-entrypoint-initdb.d/init.sql
 
+  localstack:
+    image: localstack/localstack:1.2.0
+    platform: linux/arm64
+    container_name: localstack
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=s3
+      - DEBUG=1
+      - DATA_DIR=/tmp/localstack/data
+      - AWS_S3_REGION=us-east-1
+      - AWS_S3_ACCESS_KEY=test
+      - AWS_S3_SECRET_KEY=test
+      - AWS_S3_BUCKET_NAME=my-bucket
+      - EDGE_PORT=4566
+    volumes:
+      - ./localstack-data:/var/lib/localstack
+      - ./localstack-init:/etc/localstack/init/ready.d
+      - /var/run/docker.sock:/var/run/docker.sock
+
   resource-service:
     build: ./resource-service
+    platform: linux/arm64
     ports:
       - "8081:8081"
     depends_on:
       - resource-db
       - eureka-service
+      - localstack
     environment:
       SPRING_DATASOURCE_URL: ${RESOURCE_DB_URL}
       SPRING_DATASOURCE_USERNAME: ${RESOURCE_DB_USER}
       SPRING_DATASOURCE_PASSWORD: ${RESOURCE_DB_PASSWORD}
       SONG_METADATA_URL: ${SONG_METADATA_URL}
       EUREKA_SERVICE_URL: ${EUREKA_SERVICE_URL}
+      AWS_S3_ENDPOINT: ${AWS_S3_ENDPOINT}
 
   song-service:
     build: ./song-service
-
+    platform: linux/arm64
     ports:
       - "8082"
     depends_on:

@@ -4,8 +4,6 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.JdbcType;
-import org.hibernate.type.descriptor.jdbc.VarbinaryJdbcType;
 
 @Entity
 @Table(name = "resources")
@@ -18,12 +16,10 @@ public class Resource {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "file")
-    @Lob
-    @JdbcType(VarbinaryJdbcType.class)
-    private byte[] file;
+    @Column(name = "file_url")
+    private String fileUrl;
 
-    public Resource(byte[] file) {
-        this.file = file;
+    public Resource(String fileUrl) {
+        this.fileUrl = fileUrl;
     }
 }

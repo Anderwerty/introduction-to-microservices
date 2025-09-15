@@ -1,6 +1,7 @@
 package org.example.service.core;
 
 import org.example.repository.ResourceRepository;
+import org.example.service.core.impl.ResourceServiceImpl;
 import org.example.service.exception.ResourceNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -23,11 +24,19 @@ class ResourceServiceImplTest {
     @Mock
     private ResourceRepository resourceRepository;
 
+    @Mock
+    private S3Service s3Service;
+
+    @Mock
+    KeyGenerator keyGenerator;
+
     @InjectMocks
     private ResourceServiceImpl resourceService;
 
     @Test
     void storeFileShouldSave() {
+        when(keyGenerator.generateKey()).thenReturn(GENERATED_KEY);
+        when(s3Service.uploadFile(GENERATED_KEY, FILE_BYTES)).thenReturn(DUMMY_URL);
         when(resourceRepository.save(RESOURCE_WITHOUT_ID)).thenReturn(RESOURCE_WITH_ID);
 
         Integer actualId = resourceService.storeFile(FILE_BYTES);
@@ -39,6 +48,7 @@ class ResourceServiceImplTest {
     @Test
     void getAudioDataShouldReturnFile() {
         when(resourceRepository.findById(1)).thenReturn(Optional.of(RESOURCE_WITH_ID));
+        when(s3Service.downloadFile("dummy-bucket/" + GENERATED_KEY)).thenReturn(FILE_BYTES);
 
         byte[] actual = resourceService.getAudioData(1);
         assertEquals(FILE_BYTES, actual);

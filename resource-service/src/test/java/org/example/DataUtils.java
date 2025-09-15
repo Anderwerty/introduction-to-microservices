@@ -7,13 +7,17 @@ import org.example.service.dto.SongMetadataDto;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.UUID;
 
 @UtilityClass
 public class DataUtils {
     public static final byte[] FILE_BYTES = {49, 50, 51, 52};
-    public static final Resource RESOURCE_WITHOUT_ID = new Resource(FILE_BYTES);
-    public static final Resource RESOURCE_WITH_ID = new Resource(1, FILE_BYTES);
-    public static final Resource RESOURCE_WITH_ID_2 = new Resource(2, FILE_BYTES);
+
+    public static final String GENERATED_KEY = "3116a6ba-aa62-4f3e-b16a-1b365d34a812";
+    public static final String DUMMY_URL = "dummy-bucket/" + GENERATED_KEY;
+    public static final Resource RESOURCE_WITHOUT_ID = new Resource(DUMMY_URL);
+    public static final Resource RESOURCE_WITH_ID = new Resource(1, DUMMY_URL);
+    public static final Resource RESOURCE_WITH_ID_2 = new Resource(2, DUMMY_URL);
 
 
     public static SongMetadataDto initSongMetaDataDto(Integer id) {
