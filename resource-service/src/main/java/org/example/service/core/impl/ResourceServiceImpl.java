@@ -50,7 +50,15 @@ public class ResourceServiceImpl implements ResourceService {
         List<Integer> existedIds = StreamSupport.stream(existedResources.spliterator(), false)
                 .map(Resource::getId)
                 .toList();
+        List<String> urlsToDelete = StreamSupport.stream(existedResources.spliterator(), false)
+                .map(Resource::getFileUrl)
+                .toList();
+
+        if(existedIds.isEmpty()){
+            return existedIds;
+        }
         resourceRepository.deleteAllById(existedIds);
+        s3Service.deleteAll(urlsToDelete);
 
         return existedIds;
     }

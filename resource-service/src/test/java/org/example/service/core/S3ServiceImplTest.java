@@ -11,15 +11,15 @@ import software.amazon.awssdk.core.ResponseBytes;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.S3Utilities;
-import software.amazon.awssdk.services.s3.model.GetObjectRequest;
-import software.amazon.awssdk.services.s3.model.GetObjectResponse;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.*;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
 import java.util.function.Consumer;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
@@ -126,5 +126,32 @@ class S3ServiceImplTest {
         verify(s3Client).getObjectAsBytes(getReqCaptor.capture());
         assertThat(getReqCaptor.getValue().bucket(), is(BUCKET_NAME));
         assertThat(getReqCaptor.getValue().key(), is(fullUrl));
+    }
+
+    @Test
+    void deleteAllShouldCallS3WithCorrectKeys() {
+        List<String> urlsToDelete = List.of(
+                "http://localhost:4566/my-bucket/folder/file1.txt",
+                "http://localhost:4566/my-bucket/file2.txt"
+        );
+
+        when(s3Client.deleteObjects(any(DeleteObjectsRequest.class)))
+                .thenReturn(DeleteObjectsResponse.builder().build());
+
+        s3Service.deleteAll(urlsToDelete);
+
+        ArgumentCaptor<DeleteObjectsRequest> captor = ArgumentCaptor.forClass(DeleteObjectsRequest.class);
+        verify(s3Client).deleteObjects(captor.capture());
+
+        DeleteObjectsRequest actualRequest = captor.getValue();
+
+        assertThat(actualRequest.bucket(), is(BUCKET_NAME));
+        assertThat(
+                actualRequest.delete().objects()
+                        .stream()
+                        .map(ObjectIdentifier::key)
+                        .toList(),
+                containsInAnyOrder("folder/file1.txt", "file2.txt")
+        );
     }
 }

@@ -9,6 +9,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,8 +36,8 @@ class ResourceServiceImplTest {
 
     @Test
     void storeFileShouldSave() {
-        when(keyGenerator.generateKey()).thenReturn(GENERATED_KEY);
-        when(s3Service.uploadFile(GENERATED_KEY, FILE_BYTES)).thenReturn(DUMMY_URL);
+        when(keyGenerator.generateKey()).thenReturn(GENERATED_KEY1);
+        when(s3Service.uploadFile(GENERATED_KEY1, FILE_BYTES)).thenReturn(DUMMY_URL1);
         when(resourceRepository.save(RESOURCE_WITHOUT_ID)).thenReturn(RESOURCE_WITH_ID);
 
         Integer actualId = resourceService.storeFile(FILE_BYTES);
@@ -48,7 +49,7 @@ class ResourceServiceImplTest {
     @Test
     void getAudioDataShouldReturnFile() {
         when(resourceRepository.findById(1)).thenReturn(Optional.of(RESOURCE_WITH_ID));
-        when(s3Service.downloadFile("dummy-bucket/" + GENERATED_KEY)).thenReturn(FILE_BYTES);
+        when(s3Service.downloadFile("dummy-bucket/" + GENERATED_KEY1)).thenReturn(FILE_BYTES);
 
         byte[] actual = resourceService.getAudioData(1);
         assertEquals(FILE_BYTES, actual);
@@ -71,5 +72,7 @@ class ResourceServiceImplTest {
         List<Integer> existedIds = List.of(1, 2);
         assertEquals(actualIds, existedIds);
         verify(resourceRepository).deleteAllById(existedIds);
+        verify(s3Service).deleteAll(Arrays.asList(DUMMY_URL1, DUMMY_URL2));
+
     }
 }

@@ -6,11 +6,11 @@ import org.springframework.stereotype.Service;
 import software.amazon.awssdk.core.ResponseBytes;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
-import software.amazon.awssdk.services.s3.model.GetObjectRequest;
-import software.amazon.awssdk.services.s3.model.GetObjectResponse;
-import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.*;
 
 import java.net.URL;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class S3ServiceImpl implements S3Service {
@@ -40,8 +40,7 @@ public class S3ServiceImpl implements S3Service {
         URL url = s3Client.utilities()
                 .getUrl(b -> b.bucket(bucketName).key(key));
 
-        String fileUrl = url.toString();
-        return fileUrl;
+        return url.toString();
     }
 
     @Override
@@ -55,6 +54,25 @@ public class S3ServiceImpl implements S3Service {
                         .build()
         );
         return response.asByteArray();
+    }
+
+    @Override
+    public void deleteAll(List<String> keysToDelete) {
+        List<ObjectIdentifier> objects = keysToDelete.stream()
+                .map(this::extractKey)
+                .map(key -> ObjectIdentifier.builder().key(key).build())
+                .collect(Collectors.toList());
+
+        Delete delete = Delete.builder()
+                .objects(objects)
+                .build();
+
+        DeleteObjectsRequest request = DeleteObjectsRequest.builder()
+                .bucket(bucketName)
+                .delete(delete)
+                .build();
+
+        s3Client.deleteObjects(request);
     }
 
 
