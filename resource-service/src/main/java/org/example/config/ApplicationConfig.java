@@ -2,6 +2,7 @@ package org.example.config;
 
 import org.apache.tika.parser.mp3.Mp3Parser;
 import org.apache.tika.sax.BodyContentHandler;
+import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.ResponseErrorHandler;
@@ -21,6 +22,7 @@ public class ApplicationConfig {
     }
 
     @Bean
+    @LoadBalanced
     public RestTemplate restTemplate(ResponseErrorHandler responseErrorHandler){
         RestTemplate restTemplate = new RestTemplate();
         restTemplate.setErrorHandler(responseErrorHandler);

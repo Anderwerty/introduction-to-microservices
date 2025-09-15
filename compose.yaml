@@ -31,19 +31,39 @@ services:
       - "8081:8081"
     depends_on:
       - resource-db
+      - eureka-service
     environment:
       SPRING_DATASOURCE_URL: ${RESOURCE_DB_URL}
       SPRING_DATASOURCE_USERNAME: ${RESOURCE_DB_USER}
       SPRING_DATASOURCE_PASSWORD: ${RESOURCE_DB_PASSWORD}
       SONG_METADATA_URL: ${SONG_METADATA_URL}
+      EUREKA_SERVICE_URL: ${EUREKA_SERVICE_URL}
 
   song-service:
     build: ./song-service
+
     ports:
-      - "8080:8080"
+      - "8082"
     depends_on:
       - song-db
+      - eureka-service
     environment:
       SPRING_DATASOURCE_URL: ${SONG_DB_URL}
       SPRING_DATASOURCE_USERNAME: ${SONG_DB_USER}
       SPRING_DATASOURCE_PASSWORD: ${SONG_DB_PASSWORD}
+      EUREKA_SERVICE_URL: ${EUREKA_SERVICE_URL}
+      SONG_SERVICE_PORT: ${SONG_SERVICE_PORT}
+
+  eureka-service:
+    build: ./eureka-service-discovery
+    ports:
+      - "8761:8761"
+
+  api-gateway:
+    build: ./api-gateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      - eureka-service
+    environment:
+      EUREKA_SERVICE_URL: ${EUREKA_SERVICE_URL}

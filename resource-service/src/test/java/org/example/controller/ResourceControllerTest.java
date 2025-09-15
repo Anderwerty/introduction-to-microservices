@@ -5,13 +5,18 @@ import org.example.config.ApplicationConfig;
 import org.example.service.dto.SimpleErrorResponse;
 import org.example.service.dto.ValidationErrorResponse;
 import org.example.service.dto.Identifiables;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -21,12 +26,17 @@ import org.springframework.test.web.client.match.MockRestRequestMatchers;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.client.RestTemplate;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Map;
 import java.util.stream.Stream;
 
 import static org.example.DataUtils.FILE_BYTES;
 import static org.example.DataUtils.readFile;
 import static org.hamcrest.Matchers.*;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
@@ -46,7 +56,55 @@ class ResourceControllerTest {
     @Autowired
     private RestTemplate restTemplate;
 
+    @MockitoBean
+    private DiscoveryClient discoveryClient;
+
+    @Value("${song.service.name}")
+    private String songServiceName;
+
     private final ObjectMapper mapper = new ObjectMapper();
+
+    @BeforeEach
+    void init(){
+        when(discoveryClient.getInstances(songServiceName)).thenReturn(
+                Collections.singletonList(new ServiceInstance() {
+                    @Override
+                    public String getServiceId() {
+                        return songServiceName;
+                    }
+
+                    @Override
+                    public String getHost() {
+                        return "song-service";
+                    }
+
+                    @Override
+                    public int getPort() {
+                        return 8080;
+                    }
+
+                    @Override
+                    public boolean isSecure() {
+                        return false;
+                    }
+
+                    @Override
+                    public URI getUri() {
+                        try {
+                            return new URI("http", null, "song-service", 8080, "/songs", null, null);
+                        } catch (URISyntaxException e) {
+                            throw new RuntimeException("Invalid URI", e);
+                        }
+                    }
+
+                    @Override
+                    public Map<String, String> getMetadata() {
+                        return null;
+                    }
+
+                })
+        );
+    }
 
     @Test
     void getResourceIfDataExist() throws Exception {
@@ -113,7 +171,7 @@ class ResourceControllerTest {
         byte[] fileBytes = readFile("src/test/resources/fortecya-bahmut.mp3");
         MockRestServiceServer mockServer = MockRestServiceServer.createServer(restTemplate);
 
-        mockServer.expect(requestTo("http://song-service/songs"))
+        mockServer.expect(requestTo("http://song-service:8080/songs"))
                 .andExpect(method(HttpMethod.POST))
                 .andExpect(MockRestRequestMatchers.jsonPath("$.artist", is("Антитіла")))
                 .andExpect(MockRestRequestMatchers.jsonPath("$.name", is("Фортеця Бахмут")))
@@ -139,7 +197,7 @@ class ResourceControllerTest {
         MockRestServiceServer mockServer = MockRestServiceServer.createServer(restTemplate);
         SimpleErrorResponse validationErrorResponse = new SimpleErrorResponse(409, null);
 
-        mockServer.expect(requestTo("http://song-service/songs"))
+        mockServer.expect(requestTo("http://song-service:8080/songs"))
                 .andExpect(method(HttpMethod.POST))
                 .andExpect(MockRestRequestMatchers.jsonPath("$.artist", is("Антитіла")))
                 .andExpect(MockRestRequestMatchers.jsonPath("$.name", is("Фортеця Бахмут")))
@@ -181,7 +239,7 @@ class ResourceControllerTest {
         byte[] fileBytes = readFile("src/test/resources/invalid-sample-with-missed-tags.mp3");
         MockRestServiceServer mockServer = MockRestServiceServer.createServer(restTemplate);
 
-        mockServer.expect(requestTo("http://song-service/songs"))
+        mockServer.expect(requestTo("http://song-service:8080/songs"))
                 .andExpect(method(HttpMethod.POST))
                 .andExpect(MockRestRequestMatchers.jsonPath("$.artist", is("")))
                 .andExpect(MockRestRequestMatchers.jsonPath("$.name", is("Valid Title")))
@@ -204,7 +262,7 @@ class ResourceControllerTest {
     void deleteShouldReturnListOfIds() throws Exception {
         System.out.println(mapper.writeValueAsString(new Identifiables<>(Arrays.asList(2, 3))));
         MockRestServiceServer mockServer = MockRestServiceServer.createServer(restTemplate);
-        mockServer.expect(requestTo("http://song-service/songs?id=2,3"))
+        mockServer.expect(requestTo("http://song-service:8080/songs?id=2,3"))
                 .andExpect(method(HttpMethod.DELETE))
                 .andExpect(MockRestRequestMatchers.queryParam("id", "2,3"))
                 .andRespond(withSuccess("{ \"ids\" : [2,3]}", MediaType.APPLICATION_JSON));
