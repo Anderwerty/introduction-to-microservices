@@ -1,12 +1,10 @@
 package org.example.service.rest;
 
 import lombok.AllArgsConstructor;
-import org.example.service.client.SongClient;
 import org.example.service.core.MetadataExtracter;
 import org.example.service.core.ResourceService;
 import org.example.service.dto.Identifiable;
 import org.example.service.dto.Identifiables;
-import org.example.service.dto.SongMetadataDto;
 import org.example.service.exception.IllegalResourceException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,8 +24,6 @@ public class ResourceRestServiceImpl implements ResourceRestService {
 
     private final MetadataExtracter metadataExtracter;
 
-    private final SongClient songClient;
-
 
     @Override
     public Identifiable<Integer> storeFile(byte[] bytes) throws IllegalResourceException {
@@ -35,8 +31,6 @@ public class ResourceRestServiceImpl implements ResourceRestService {
         validateFile(bytes);
 
         Integer id = resourceService.storeFile(bytes);
-        SongMetadataDto songMetadataDto = metadataExtracter.extract(bytes, id);
-        songClient.saveSongMetadata(songMetadataDto);
         return new Identifiable<>(id);
     }
 
@@ -61,8 +55,7 @@ public class ResourceRestServiceImpl implements ResourceRestService {
 
         List<Integer> deletedIds = resourceService.deleteAll(ids);
 
-        songClient.deleteSongsMetadata(deletedIds);
-        return new Identifiables(deletedIds);
+        return new Identifiables<>(deletedIds);
     }
 
     private void validateFile(byte[] bytes) {

@@ -2,6 +2,7 @@ package org.example.service.core;
 
 import org.apache.tika.parser.mp3.Mp3Parser;
 import org.apache.tika.sax.BodyContentHandler;
+import org.example.service.core.impl.Mp3MetadataExtracter;
 import org.example.service.dto.SongMetadataDto;
 import org.junit.jupiter.api.Test;
 
