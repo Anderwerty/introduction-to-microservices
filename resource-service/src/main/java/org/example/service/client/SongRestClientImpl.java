@@ -3,6 +3,7 @@ package org.example.service.client;
 import org.example.service.dto.Identifiable;
 import org.example.service.dto.Identifiables;
 import org.example.service.dto.SongMetadataDto;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Component;
@@ -17,7 +18,8 @@ public class SongRestClientImpl implements SongClient {
     private final RestTemplate restTemplate;
 
 
-    public SongRestClientImpl(RestTemplate restTemplate, @Value("${song.service.name}") String songServiceName) {
+    public SongRestClientImpl(@Qualifier("song.service.rest.template") RestTemplate restTemplate,
+                              @Value("${song.service.name}") String songServiceName) {
         this.restTemplate = restTemplate;
         this.songServiceName = songServiceName;
     }

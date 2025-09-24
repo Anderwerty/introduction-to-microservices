@@ -3,13 +3,17 @@ package org.example.service.client;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.DataUtils;
 import org.example.config.ApplicationConfig;
+import org.example.config.RabbitProducerConfig;
 import org.example.service.dto.*;
 import org.example.service.exception.ConflictRuntimeException;
 import org.example.service.exception.NotValidSongMetaDataRuntimeException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
+import org.springframework.amqp.rabbit.connection.ConnectionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.*;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -38,6 +42,7 @@ class SongRestClientImplTest {
     private SongRestClientImpl songRestClient;
 
     @Autowired
+    @Qualifier("song.service.rest.template")
     private RestTemplate restTemplate;
 
     @Autowired
@@ -169,11 +174,16 @@ class SongRestClientImplTest {
 @Configuration
 @PropertySource("application.properties")
 @ComponentScan("org.example.service.client")
-@Import(ApplicationConfig.class)
+@Import({ApplicationConfig.class, RabbitProducerConfig.class})
 class TestConfig {
 
     @Bean
     public ObjectMapper objectMapper() {
         return new ObjectMapper();
+    }
+
+    @Bean
+    public ConnectionFactory connectionFactory() {
+        return Mockito.mock(ConnectionFactory.class);
     }
 }

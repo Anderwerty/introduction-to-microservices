@@ -60,7 +60,7 @@ public class ApplicationConfig {
         return new BodyContentHandler();
     }
 
-    @Bean
+    @Bean("song.service.rest.template")
     @LoadBalanced
     public RestTemplate restTemplate(ResponseErrorHandler responseErrorHandler){
         RestTemplate restTemplate = new RestTemplate();

@@ -1,6 +1,7 @@
 package org.example.service.rest;
 
 import lombok.AllArgsConstructor;
+import org.example.service.client.MessagePublisher;
 import org.example.service.core.MetadataExtracter;
 import org.example.service.core.ResourceService;
 import org.example.service.dto.Identifiable;
@@ -24,6 +25,8 @@ public class ResourceRestServiceImpl implements ResourceRestService {
 
     private final MetadataExtracter metadataExtracter;
 
+    private final MessagePublisher<Identifiable<Integer>> messagePublisher;
+
 
     @Override
     public Identifiable<Integer> storeFile(byte[] bytes) throws IllegalResourceException {
@@ -31,7 +34,9 @@ public class ResourceRestServiceImpl implements ResourceRestService {
         validateFile(bytes);
 
         Integer id = resourceService.storeFile(bytes);
-        return new Identifiable<>(id);
+        Identifiable<Integer> identifiable = new Identifiable<>(id);
+        messagePublisher.publishMessage(identifiable);
+        return identifiable;
     }
 
     @Override

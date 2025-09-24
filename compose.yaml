@@ -47,6 +47,16 @@ services:
       - ./localstack-init:/etc/localstack/init/ready.d
       - /var/run/docker.sock:/var/run/docker.sock
 
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+
   resource-service:
     build: ./resource-service
     platform: linux/arm64
@@ -56,6 +66,7 @@ services:
       - resource-db
       - eureka-service
       - localstack
+      - rabbitmq
     environment:
       SPRING_DATASOURCE_URL: ${RESOURCE_DB_URL}
       SPRING_DATASOURCE_USERNAME: ${RESOURCE_DB_USER}
@@ -63,6 +74,11 @@ services:
       SONG_METADATA_URL: ${SONG_METADATA_URL}
       EUREKA_SERVICE_URL: ${EUREKA_SERVICE_URL}
       AWS_S3_ENDPOINT: ${AWS_S3_ENDPOINT}
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+      RESOURCE_TOPIC_NAME: ${RESOURCE_TOPIC_NAME}
+      RESOURCE_ROUTING_KEY: ${RESOURCE_ROUTING_KEY}
+      QUEUE_NAME: ${QUEUE_NAME}
 
   song-service:
     build: ./song-service
