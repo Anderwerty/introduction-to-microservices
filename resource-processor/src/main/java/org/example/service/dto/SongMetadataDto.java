@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class SongMetadataDto {
+    private Integer id;
 
     private String name;
 

@@ -16,8 +16,7 @@ import java.util.Optional;
 import static org.example.DataUtils.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ResourceServiceImplTest {
@@ -73,6 +72,17 @@ class ResourceServiceImplTest {
         assertEquals(actualIds, existedIds);
         verify(resourceRepository).deleteAllById(existedIds);
         verify(s3Service).deleteAll(Arrays.asList(DUMMY_URL1, DUMMY_URL2));
+    }
 
+    @Test
+    void deleteShouldNotRemoveItemsFromDBIfNotSuch() {
+        List<Integer> ids = List.of(1, 2, 3);
+        when(resourceRepository.findAllById(ids)).thenReturn(List.of());
+
+        List<Integer> actualIds = resourceService.deleteAll(ids);
+        List<Integer> existedIds = List.of();
+        assertEquals(actualIds, existedIds);
+        verify(resourceRepository, never()).deleteAllById(existedIds);
+        verify(s3Service, never()).deleteAll(Arrays.asList(DUMMY_URL1, DUMMY_URL2));
     }
 }

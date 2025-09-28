@@ -1,7 +1,9 @@
 package org.example.service.rest;
 
+import org.example.service.client.MessagePublisher;
 import org.example.service.core.MetadataExtracter;
 import org.example.service.core.ResourceService;
+import org.example.service.dto.ResourceEvent;
 import org.example.service.exception.IllegalResourceException;
 import org.example.service.dto.Identifiable;
 import org.example.service.dto.Identifiables;
@@ -18,6 +20,7 @@ import java.util.List;
 import static org.example.DataUtils.FILE_BYTES;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -27,6 +30,9 @@ class ResourceRestServiceImplTest {
 
     @Mock
     private MetadataExtracter metadataExtracter;
+
+    @Mock
+    private MessagePublisher<ResourceEvent> messagePublisher;
 
     @InjectMocks
     private ResourceRestServiceImpl resourceRestService;
@@ -39,6 +45,7 @@ class ResourceRestServiceImplTest {
 
         Identifiable<Integer> identifiable = resourceRestService.storeFile(FILE_BYTES);
         assertEquals(new Identifiable<>(1), identifiable);
+        verify(messagePublisher).publishMessage(new ResourceEvent(1));
     }
 
     @Test

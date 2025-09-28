@@ -2,9 +2,9 @@ package org.example.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.config.ApplicationConfig;
+import org.example.service.client.MessagePublisher;
+import org.example.service.dto.ResourceEvent;
 import org.example.service.dto.SimpleErrorResponse;
-import org.example.service.dto.ValidationErrorResponse;
-import org.example.service.dto.Identifiables;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -14,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
@@ -31,7 +30,6 @@ import java.net.URL;
 import java.util.function.Consumer;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -44,12 +42,6 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.hamcrest.Matchers.*;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
-import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
-import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
-import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -63,11 +55,14 @@ class ResourceControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean(name = "s3.storage")
+    @MockitoBean(name = "s3.storage")
     private S3Client s3Client;
 
     @MockitoBean
     private DiscoveryClient discoveryClient;
+
+    @MockitoBean("music.event.message.publisher")
+    private MessagePublisher<ResourceEvent> messagePublisher;
 
     @Value("${song.service.name}")
     private String songServiceName;
