@@ -1,6 +1,6 @@
 package org.example.service.client;
 
-import org.example.service.dto.Identifiable;
+import org.example.service.dto.ResourceEvent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -30,14 +30,14 @@ class MessagePublisherImplTest {
 
     @Test
     void testSendMessage() {
-        Identifiable<Integer> message = new Identifiable<>(SONG_ID);
+        ResourceEvent message = new ResourceEvent(SONG_ID);
 
         messageClient.publishMessage(message);
 
-        ArgumentCaptor<Identifiable> captor = ArgumentCaptor.forClass(Identifiable.class);
+        ArgumentCaptor<ResourceEvent> captor = ArgumentCaptor.forClass(ResourceEvent.class);
         verify(rabbitTemplate).convertAndSend(eq(EXCHANGE), eq(RESOURCE_MUSIC), captor.capture());
 
-        Identifiable<String> capturedMessage = captor.getValue();
-        assertEquals(SONG_ID, capturedMessage.getId());
+        ResourceEvent capturedMessage = captor.getValue();
+        assertEquals(SONG_ID, capturedMessage.getResourceId());
     }
 }

@@ -1,12 +1,13 @@
 package org.example.service.rest;
 
-import lombok.AllArgsConstructor;
 import org.example.service.client.MessagePublisher;
 import org.example.service.core.MetadataExtracter;
 import org.example.service.core.ResourceService;
 import org.example.service.dto.Identifiable;
 import org.example.service.dto.Identifiables;
+import org.example.service.dto.ResourceEvent;
 import org.example.service.exception.IllegalResourceException;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,7 +16,6 @@ import java.util.Collections;
 import java.util.List;
 
 @Transactional
-@AllArgsConstructor
 @Service
 public class ResourceRestServiceImpl implements ResourceRestService {
 
@@ -25,8 +25,15 @@ public class ResourceRestServiceImpl implements ResourceRestService {
 
     private final MetadataExtracter metadataExtracter;
 
-    private final MessagePublisher<Identifiable<Integer>> messagePublisher;
+    private final MessagePublisher<ResourceEvent> messagePublisher;
 
+    public ResourceRestServiceImpl(ResourceService resourceService, MetadataExtracter metadataExtracter,
+                                   @Qualifier("music.event.message.publisher")
+                                   MessagePublisher<ResourceEvent> messagePublisher) {
+        this.resourceService = resourceService;
+        this.metadataExtracter = metadataExtracter;
+        this.messagePublisher = messagePublisher;
+    }
 
     @Override
     public Identifiable<Integer> storeFile(byte[] bytes) throws IllegalResourceException {
@@ -34,9 +41,9 @@ public class ResourceRestServiceImpl implements ResourceRestService {
         validateFile(bytes);
 
         Integer id = resourceService.storeFile(bytes);
-        Identifiable<Integer> identifiable = new Identifiable<>(id);
-        messagePublisher.publishMessage(identifiable);
-        return identifiable;
+        ResourceEvent  resourceEvent = new ResourceEvent(id);
+        messagePublisher.publishMessage(resourceEvent);
+        return new Identifiable<>(id);
     }
 
     @Override

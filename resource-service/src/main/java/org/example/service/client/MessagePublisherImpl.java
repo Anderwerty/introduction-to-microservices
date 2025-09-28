@@ -1,13 +1,12 @@
 package org.example.service.client;
 
-import org.example.service.dto.Identifiable;
+import org.example.service.dto.ResourceEvent;
 import org.springframework.amqp.core.AmqpTemplate;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-@Component
-public class MessagePublisherImpl implements MessagePublisher<Identifiable<Integer>> {
+@Component("music.event.message.publisher")
+public class MessagePublisherImpl implements MessagePublisher<ResourceEvent> {
 
     private final AmqpTemplate amqpTemplate;
 
@@ -25,7 +24,7 @@ public class MessagePublisherImpl implements MessagePublisher<Identifiable<Integ
     }
 
     @Override
-    public void publishMessage(Identifiable<Integer> message){
-        amqpTemplate.convertAndSend(exchange,routingkey,message);
+    public void publishMessage(ResourceEvent message){
+        amqpTemplate.convertAndSend(exchange, routingkey, message);
     }
 }

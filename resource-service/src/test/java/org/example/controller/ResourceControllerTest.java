@@ -3,7 +3,7 @@ package org.example.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.config.ApplicationConfig;
 import org.example.service.client.MessagePublisher;
-import org.example.service.dto.Identifiable;
+import org.example.service.dto.ResourceEvent;
 import org.example.service.dto.SimpleErrorResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -61,8 +61,8 @@ class ResourceControllerTest {
     @MockitoBean
     private DiscoveryClient discoveryClient;
 
-    @MockitoBean
-    private MessagePublisher<Identifiable<Integer>> messagePublisher;
+    @MockitoBean("music.event.message.publisher")
+    private MessagePublisher<ResourceEvent> messagePublisher;
 
     @Value("${song.service.name}")
     private String songServiceName;

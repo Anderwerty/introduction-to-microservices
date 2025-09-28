@@ -3,6 +3,7 @@ package org.example.service.rest;
 import org.example.service.client.MessagePublisher;
 import org.example.service.core.MetadataExtracter;
 import org.example.service.core.ResourceService;
+import org.example.service.dto.ResourceEvent;
 import org.example.service.exception.IllegalResourceException;
 import org.example.service.dto.Identifiable;
 import org.example.service.dto.Identifiables;
@@ -31,7 +32,7 @@ class ResourceRestServiceImplTest {
     private MetadataExtracter metadataExtracter;
 
     @Mock
-    private MessagePublisher<Identifiable<Integer>> messagePublisher;
+    private MessagePublisher<ResourceEvent> messagePublisher;
 
     @InjectMocks
     private ResourceRestServiceImpl resourceRestService;
@@ -44,7 +45,7 @@ class ResourceRestServiceImplTest {
 
         Identifiable<Integer> identifiable = resourceRestService.storeFile(FILE_BYTES);
         assertEquals(new Identifiable<>(1), identifiable);
-        verify(messagePublisher).publishMessage(new Identifiable<>(1));
+        verify(messagePublisher).publishMessage(new ResourceEvent(1));
     }
 
     @Test

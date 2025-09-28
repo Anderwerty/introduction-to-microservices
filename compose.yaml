@@ -95,13 +95,28 @@ services:
       EUREKA_SERVICE_URL: ${EUREKA_SERVICE_URL}
       SONG_SERVICE_PORT: ${SONG_SERVICE_PORT}
 
+  resource-processor:
+    build: ./resource-processor
+    platform: linux/arm64
+    ports:
+      - "8083"
+    depends_on:
+      - rabbitmq
+      - song-service
+      - resource-service
+      - eureka-service
+    environment:
+      EUREKA_SERVICE_URL: ${EUREKA_SERVICE_URL}
+
   eureka-service:
     build: ./eureka-service-discovery
+    platform: linux/arm64
     ports:
       - "8761:8761"
 
   api-gateway:
     build: ./api-gateway
+    platform: linux/arm64
     ports:
       - "8080:8080"
     depends_on:

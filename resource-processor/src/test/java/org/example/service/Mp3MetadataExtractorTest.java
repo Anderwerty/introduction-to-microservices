@@ -11,16 +11,16 @@ import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class Mp3MetadataExtracterTest {
+class Mp3MetadataExtractorTest {
     private static final byte[] FILE_BYTES = readFile("src/test/resources/fortecya-bahmut.mp3");
 
     private final Mp3Parser mp3Parser = new Mp3Parser();
     private final BodyContentHandler handler = new BodyContentHandler();
-    private final Mp3MetadataExtracter extracter = new Mp3MetadataExtracter(mp3Parser, handler);
+    private final Mp3MetadataExtractor extractor = new Mp3MetadataExtractor(mp3Parser, handler);
 
     @Test
     void testExtractMetaData() {
-        SongMetadataDto actual = extracter.extract(FILE_BYTES);
+        SongMetadataDto actual = extractor.extract(FILE_BYTES);
         SongMetadataDto expected = SongMetadataDto.builder()
                 .name("Фортеця Бахмут")
                 .artist("Антитіла")
@@ -34,7 +34,7 @@ class Mp3MetadataExtracterTest {
 
     @Test
     void testGetMime() {
-        String mimeType = extracter.getMimeType(FILE_BYTES);
+        String mimeType = extractor.getMimeType(FILE_BYTES);
         assertEquals("audio/mpeg", mimeType);
     }
 
