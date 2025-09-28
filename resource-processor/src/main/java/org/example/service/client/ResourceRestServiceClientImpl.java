@@ -3,6 +3,8 @@ package org.example.service.client;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -18,6 +20,11 @@ public class ResourceRestServiceClientImpl implements ResourceServiceClient {
         this.resourceServiceName = resourceServiceName;
     }
 
+    @Retryable(
+            maxAttemptsExpression = "${retry.max-attempts}",
+            backoff = @Backoff(delayExpression = "${retry.delay}",
+                    multiplierExpression = "${retry.multiplier}")
+    )
     @Override
     public byte[] getResourceData(Integer resourceId) {
         String url = "http://" + resourceServiceName + "/resources/{resourceId}";

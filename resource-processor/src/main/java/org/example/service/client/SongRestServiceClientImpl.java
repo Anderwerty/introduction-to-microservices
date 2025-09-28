@@ -5,6 +5,8 @@ import org.example.service.dto.SongMetadataDto;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
@@ -20,6 +22,11 @@ public class SongRestServiceClientImpl implements SongServiceClient {
         this.songServiceName = songServiceName;
     }
 
+    @Retryable(
+            maxAttemptsExpression = "${retry.max-attempts}",
+            backoff = @Backoff(delayExpression = "${retry.delay}",
+                    multiplierExpression = "${retry.multiplier}")
+    )
     @Override
     public Identifiable<Integer> saveSongMetadata(SongMetadataDto songMetadataDto) {
         String url = "http://" + songServiceName + "/songs";
