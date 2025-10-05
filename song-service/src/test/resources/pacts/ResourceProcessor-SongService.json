@@ -1,0 +1,106 @@
+{
+  "consumer": {
+    "name": "ResourceProcessor"
+  },
+  "interactions": [
+    {
+      "description": "A request for song metadata",
+      "key": "8d2ee83",
+      "pending": false,
+      "request": {
+        "method": "GET",
+        "path": "/songs/1234"
+      },
+      "response": {
+        "body": {
+          "content": {
+            "album": "Imagine",
+            "artist": "John Lennon",
+            "duration": "03:03",
+            "id": 123,
+            "name": "Imagine",
+            "year": "1971"
+          },
+          "contentType": "application/json",
+          "encoded": false
+        },
+        "headers": {
+          "Content-Type": [
+            "application/json"
+          ]
+        },
+        "matchingRules": {
+          "body": {
+            "$.album": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.artist": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.duration": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "regex",
+                  "regex": "^(0[0-9]|[1-5][0-9]):[0-5][0-9]$"
+                }
+              ]
+            },
+            "$.id": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "number"
+                }
+              ]
+            },
+            "$.name": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "type"
+                }
+              ]
+            },
+            "$.year": {
+              "combine": "AND",
+              "matchers": [
+                {
+                  "match": "regex",
+                  "regex": "^(19[0-9]{2}|20[0-9]{2})$"
+                }
+              ]
+            }
+          }
+        },
+        "status": 200
+      },
+      "transport": "https",
+      "type": "Synchronous/HTTP"
+    }
+  ],
+  "metadata": {
+    "pact-jvm": {
+      "version": "4.6.10"
+    },
+    "pactSpecification": {
+      "version": "4.0"
+    },
+    "plugins": [
+
+    ]
+  },
+  "provider": {
+    "name": "SongService"
+  }
+}
