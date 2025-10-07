@@ -13,6 +13,11 @@ services:
       - "5433:5432"
     volumes:
       - ./init-scripts/resource-db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${RESOURCE_DB_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   song-db:
     image: postgres:16-alpine
@@ -26,6 +31,11 @@ services:
       - "5432:5432"
     volumes:
       - ./init-scripts/song-db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${SONG_DB_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   localstack:
     image: localstack/localstack:1.2.0
@@ -34,18 +44,23 @@ services:
     ports:
       - "4566:4566"
     environment:
-      - SERVICES=s3
-      - DEBUG=1
+      - SERVICES=${LOCALSTACK_SERVICES}
+      - DEBUG=${LOCALSTACK_DEBUG}
       - DATA_DIR=/tmp/localstack/data
-      - AWS_S3_REGION=us-east-1
-      - AWS_S3_ACCESS_KEY=test
-      - AWS_S3_SECRET_KEY=test
-      - AWS_S3_BUCKET_NAME=my-bucket
-      - EDGE_PORT=4566
+      - AWS_S3_REGION=${LOCALSTACK_REGION}
+      - AWS_S3_ACCESS_KEY=${LOCALSTACK_ACCESS_KEY}
+      - AWS_S3_SECRET_KEY=${LOCALSTACK_SECRET_KEY}
+      - AWS_S3_BUCKET_NAME=${LOCALSTACK_BUCKET_NAME}
+      - EDGE_PORT=${LOCALSTACK_EDGE_PORT}
     volumes:
       - ./localstack-data:/var/lib/localstack
       - ./localstack-init:/etc/localstack/init/ready.d
       - /var/run/docker.sock:/var/run/docker.sock
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:4566/_localstack/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   rabbitmq:
     image: rabbitmq:3-management
@@ -56,6 +71,11 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   resource-service:
     build: ./resource-service
@@ -63,10 +83,14 @@ services:
     ports:
       - "8081:8081"
     depends_on:
-      - resource-db
-      - eureka-service
-      - localstack
-      - rabbitmq
+      resource-db:
+        condition: service_healthy
+      eureka-service:
+        condition: service_healthy
+      localstack:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     environment:
       SPRING_DATASOURCE_URL: ${RESOURCE_DB_URL}
       SPRING_DATASOURCE_USERNAME: ${RESOURCE_DB_USER}
@@ -79,6 +103,14 @@ services:
       RESOURCE_TOPIC_NAME: ${RESOURCE_TOPIC_NAME}
       RESOURCE_ROUTING_KEY: ${RESOURCE_ROUTING_KEY}
       QUEUE_NAME: ${QUEUE_NAME}
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASS: ${RABBITMQ_PASS}
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8081/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   song-service:
     build: ./song-service
@@ -86,14 +118,22 @@ services:
     ports:
       - "8082"
     depends_on:
-      - song-db
-      - eureka-service
+      song-db:
+        condition: service_healthy
+      eureka-service:
+        condition: service_healthy
     environment:
       SPRING_DATASOURCE_URL: ${SONG_DB_URL}
       SPRING_DATASOURCE_USERNAME: ${SONG_DB_USER}
       SPRING_DATASOURCE_PASSWORD: ${SONG_DB_PASSWORD}
       EUREKA_SERVICE_URL: ${EUREKA_SERVICE_URL}
       SONG_SERVICE_PORT: ${SONG_SERVICE_PORT}
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8082/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   resource-processor:
     build: ./resource-processor
@@ -101,18 +141,36 @@ services:
     ports:
       - "8083"
     depends_on:
-      - rabbitmq
-      - song-service
-      - resource-service
-      - eureka-service
+      resource-service:
+        condition: service_healthy
+      song-service:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      eureka-service:
+        condition: service_healthy
     environment:
       EUREKA_SERVICE_URL: ${EUREKA_SERVICE_URL}
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASS: ${RABBITMQ_PASS}
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8083/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
 
   eureka-service:
     build: ./eureka-service-discovery
     platform: linux/arm64
     ports:
       - "8761:8761"
+    healthcheck:
+      test: [ "CMD", "curl", "-fsS", "http://localhost:8761/actuator/health" ]
+      interval: 20s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
 
   api-gateway:
     build: ./api-gateway
@@ -120,6 +178,12 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - eureka-service
+      eureka-service:
+        condition: service_healthy
     environment:
       EUREKA_SERVICE_URL: ${EUREKA_SERVICE_URL}
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8080/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
