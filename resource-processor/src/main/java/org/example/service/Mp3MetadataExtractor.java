@@ -18,7 +18,7 @@ import java.io.InputStream;
 
 @Component
 @AllArgsConstructor
-public class Mp3MetadataExtracter implements MetadataExtracter {
+public class Mp3MetadataExtractor implements MetadataExtractor {
     private final Mp3Parser mp3Parser;
     private final BodyContentHandler handler;
 

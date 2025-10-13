@@ -4,6 +4,9 @@ import org.example.service.core.impl.S3ServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -17,6 +20,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -128,16 +132,19 @@ class S3ServiceImplTest {
         assertThat(getReqCaptor.getValue().key(), is(fullUrl));
     }
 
-    @Test
-    void deleteAllShouldCallS3WithCorrectKeys() {
+    @ParameterizedTest
+    @MethodSource("deleteMethodData")
+    void deleteAllShouldCallS3WithCorrectKeys(String endPoint) {
         List<String> urlsToDelete = List.of(
                 "http://localhost:4566/my-bucket/folder/file1.txt",
-                "http://localhost:4566/my-bucket/file2.txt"
+                "http://localhost:4566/my-bucket/file2.txt",
+                "file3.txt"
         );
 
         when(s3Client.deleteObjects(any(DeleteObjectsRequest.class)))
                 .thenReturn(DeleteObjectsResponse.builder().build());
 
+        S3ServiceImpl s3Service = new S3ServiceImpl(s3Client,BUCKET_NAME, endPoint);
         s3Service.deleteAll(urlsToDelete);
 
         ArgumentCaptor<DeleteObjectsRequest> captor = ArgumentCaptor.forClass(DeleteObjectsRequest.class);
@@ -151,7 +158,15 @@ class S3ServiceImplTest {
                         .stream()
                         .map(ObjectIdentifier::key)
                         .toList(),
-                containsInAnyOrder("folder/file1.txt", "file2.txt")
+                containsInAnyOrder("folder/file1.txt", "file2.txt","file3.txt")
+        );
+    }
+
+
+    public static Stream<Arguments> deleteMethodData() {
+        return Stream.of(
+                Arguments.of(S3_END_POINT),
+                Arguments.of(S3_END_POINT+"/")
         );
     }
 }
