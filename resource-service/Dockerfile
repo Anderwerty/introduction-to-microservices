@@ -8,6 +8,7 @@ RUN mvn clean package -Dmaven.test.skip=true
 
 FROM --platform=linux/amd64 eclipse-temurin:17-jre-alpine-3.21
 WORKDIR /app
+RUN apk add --no-cache curl
 COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8081
 
