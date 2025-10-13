@@ -99,6 +99,7 @@ class SongMetadataControllerTest {
                 .year("2023")
                 .build();
 
+        System.out.println(mapper.writeValueAsString(request));
         mockMvc.perform(post("/songs")
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
                         .accept(MediaType.APPLICATION_JSON)
