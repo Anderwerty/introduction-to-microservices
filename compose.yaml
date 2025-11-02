@@ -220,6 +220,8 @@ services:
         condition: service_healthy
       eureka-service:
         condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     environment:
       SPRING_DATASOURCE_URL: ${STORAGE_DB_URL}
       SPRING_DATASOURCE_USERNAME: ${STORAGE_DB_USER}

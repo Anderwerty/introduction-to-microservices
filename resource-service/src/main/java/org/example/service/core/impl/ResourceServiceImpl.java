@@ -55,11 +55,17 @@ public class ResourceServiceImpl implements ResourceService {
     @Override
     public Integer storeFile(byte[] data) {
 
-        StorageDetailsResponse storage = storageClient.getStorageByStorageType(StorageType.STAGING);
+        List<StorageDetailsResponse> storages = storageClient.getStorageDetailsResponses();
 
-        String generatedKey = keyGenerator.generateKey(storage.getPath());
+        StorageDetailsResponse stagingStorage =
+                storages.stream()
+                        .filter(s -> s.getStorageType() == StorageType.STAGING)
+                        .findAny()
+                        .orElseThrow(ResourceNotFoundException::new);
+
+        String generatedKey = keyGenerator.generateKey(stagingStorage.getPath());
         FileUrl fileUrlToSave = FileUrl.builder()
-                .bucketName(storage.getBucket())
+                .bucketName(stagingStorage.getBucket())
                 .key(generatedKey)
                 .build();
         FileUrl fileUrl = s3Service.uploadFile(fileUrlToSave, data);
@@ -98,7 +104,7 @@ public class ResourceServiceImpl implements ResourceService {
         }
         resourceRepository.deleteAllById(existedIds);
 
-        List< FileUrl> urlsToDelete = StreamSupport.stream(existedResources.spliterator(), false)
+        List<FileUrl> urlsToDelete = StreamSupport.stream(existedResources.spliterator(), false)
                 .map(Resource::getFileUrl)
                 .map(fileUrlMapper::mapToDto)
                 .toList();

@@ -1,4 +1,6 @@
-CREATE TABLE resources (
+CREATE TABLE storages (
     id SERIAL PRIMARY KEY,
-    file_url VARCHAR(255)
+    storage_type VARCHAR(50) NOT NULL,
+    bucket VARCHAR(255) NOT NULL,
+    path VARCHAR(255) NOT NULL
 );

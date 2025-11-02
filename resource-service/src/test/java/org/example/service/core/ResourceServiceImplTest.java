@@ -55,8 +55,9 @@ class ResourceServiceImplTest {
     @Test
     void storeFileShouldSave() {
         StorageDetailsResponse storageResponse = new StorageDetailsResponse(1, StorageType.STAGING, BUCKET_NAME, PATH);
-        when(storageClient.getStorageByStorageType(StorageType.STAGING))
-                .thenReturn(storageResponse);
+        StorageDetailsResponse permanentResponse = new StorageDetailsResponse(2, StorageType.PERMANENT, BUCKET_NAME, PATH);
+        when(storageClient.getStorageDetailsResponses())
+                .thenReturn(List.of(storageResponse, permanentResponse));
         String generatedKey = PATH + "/" + GENERATED_KEY1;
         when(keyGenerator.generateKey(PATH)).thenReturn(generatedKey);
         FileUrl fileUrlToSave = FileUrl.builder()

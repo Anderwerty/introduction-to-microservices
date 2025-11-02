@@ -1,5 +1,6 @@
 package org.example.service.client;
 
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.example.service.dto.StorageDetailsResponse;
 import org.example.service.dto.StorageType;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -11,7 +12,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
-import java.util.Objects;
 
 @Component("storage.rest.client")
 public class StorageRestClientImpl implements StorageClient {
@@ -25,7 +25,8 @@ public class StorageRestClientImpl implements StorageClient {
     }
 
     @Override
-    public StorageDetailsResponse getStorageByStorageType(StorageType storageType){
+    @CircuitBreaker(name = "storageService", fallbackMethod = "getStorageDetailsFallback")
+    public List<StorageDetailsResponse> getStorageDetailsResponses() {
         String url = "http://" + storageServiceName + "/storages";
 
         ResponseEntity<List<StorageDetailsResponse>> response =
@@ -33,17 +34,33 @@ public class StorageRestClientImpl implements StorageClient {
                         url,
                         HttpMethod.GET,
                         null,
-                        new ParameterizedTypeReference<>() {}
+                        new ParameterizedTypeReference<>() {
+                        }
                 );
-        if(response.getBody() == null){
+        if (response.getBody() == null) {
             return null;
         }
 
-        List<StorageDetailsResponse> storages = response.getBody();
-        return storages.stream()
-                .filter(Objects::nonNull)
-                .filter(x -> x.getStorageType() == StorageType.STAGING)
-                .findAny()
-                .orElse(null);
+        return response.getBody();
+    }
+
+    /**
+     * Fallback method called by Resilience4j if circuit breaker is open or exception occurs
+     */
+    private List<StorageDetailsResponse> getStorageDetailsFallback(Throwable throwable) {
+        return List.of(
+                StorageDetailsResponse.builder()
+                        .id(1)
+                        .storageType(StorageType.STAGING)
+                        .bucket("staging-bucket")
+                        .path("/staging-files")
+                        .build(),
+                StorageDetailsResponse.builder()
+                        .id(2)
+                        .storageType(StorageType.PERMANENT)
+                        .bucket("permanent-bucket")
+                        .path("/permanent-files")
+                        .build()
+        );
     }
 }

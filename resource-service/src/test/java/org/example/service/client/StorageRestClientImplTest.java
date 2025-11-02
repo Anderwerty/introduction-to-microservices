@@ -49,9 +49,13 @@ class StorageRestClientTest {
 
     @Test
     void getStorageByStorageTypeShouldReturnMatchingStorage() throws Exception {
+        StorageDetailsResponse stagingStorage =
+                new StorageDetailsResponse(1, StorageType.STAGING, "bucket1", "/path1");
+        StorageDetailsResponse permanentStorage =
+                new StorageDetailsResponse(2, StorageType.PERMANENT, "bucket2", "/path2");
         List<StorageDetailsResponse> responseList = List.of(
-                new StorageDetailsResponse(1, StorageType.STAGING, "bucket1", "/path1"),
-                new StorageDetailsResponse(2, StorageType.PERMANENT, "bucket2", "/path2")
+                stagingStorage,
+                permanentStorage
         );
 
         mockServer.expect(ExpectedCount.once(), requestTo("http://storage-service/storages"))
@@ -60,41 +64,14 @@ class StorageRestClientTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(objectMapper.writeValueAsString(responseList)));
 
-        StorageDetailsResponse result = storageRestClient.getStorageByStorageType(StorageType.STAGING);
+        List<StorageDetailsResponse> result = storageRestClient.getStorageDetailsResponses();
 
         assertAll(
                 () -> assertThat(result, is(notNullValue())),
-                () -> assertThat(result.getStorageType(), is(StorageType.STAGING)),
-                () -> assertThat(result.getBucket(), is("bucket1")));
+                () -> assertThat(result, hasSize(2)),
+                () -> assertThat(result, hasItems(stagingStorage, permanentStorage)));
     }
 
-    @Test
-    void getStorageByStorageTypeShouldReturnNullWhenNoMatchingStorage() throws Exception {
-        List<StorageDetailsResponse> responseList = List.of(
-                new StorageDetailsResponse(1, StorageType.PERMANENT, "bucket2", "/path2")
-        );
-
-        mockServer.expect(ExpectedCount.once(), requestTo("http://storage-service/storages"))
-                .andExpect(method(HttpMethod.GET))
-                .andRespond(withStatus(HttpStatus.OK)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .body(objectMapper.writeValueAsString(responseList)));
-
-        StorageDetailsResponse result = storageRestClient.getStorageByStorageType(StorageType.STAGING);
-        assertThat(result, is(nullValue()));
-    }
-
-    @Test
-    void getStorageBySto3rageTypeShouldReturnNullWhenResponseBodyIsNull() {
-        mockServer.expect(ExpectedCount.once(), requestTo("http://storage-service/storages"))
-                .andExpect(method(HttpMethod.GET))
-                .andRespond(withStatus(HttpStatus.OK)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .body("null"));
-
-        StorageDetailsResponse result = storageRestClient.getStorageByStorageType(StorageType.STAGING);
-        assertThat(result, is(nullValue()));
-    }
 
     @Configuration
     static class TestConfig {

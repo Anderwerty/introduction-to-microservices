@@ -17,6 +17,7 @@ public class Storage {
     private Integer id;
 
     @Column(name = "storage_type")
+    @Enumerated(EnumType.STRING)
     private StorageType storageType;
 
     @Column(name = "bucket")

@@ -1,4 +1,5 @@
-INSERT INTO resources(file_url) VALUES ('https://my-bucket.s3.amazonaws.com/file1.bin');
-INSERT INTO resources(file_url) VALUES ('https://my-bucket.s3.amazonaws.com/file2.bin');
-INSERT INTO resources(file_url) VALUES ('https://my-bucket.s3.amazonaws.com/file3.bin');
-INSERT INTO resources(file_url) VALUES ('https://my-bucket.s3.amazonaws.com/file4.bin');
+INSERT INTO storages (id, storage_type, bucket, path)
+VALUES (1, 'PERMANENT', 'permanent-bucket', '/permanent-files');
+
+INSERT INTO storages (id, storage_type, bucket, path)
+VALUES (2, 'STAGING', 'staging-bucket', '/staging-files')
