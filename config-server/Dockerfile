@@ -10,6 +10,6 @@ FROM --platform=linux/amd64 eclipse-temurin:17-jre-alpine-3.21
 WORKDIR /app
 RUN apk add --no-cache curl
 COPY --from=build /app/target/*.jar app.jar
-EXPOSE 8082
+EXPOSE 8888
 
 CMD ["java", "-jar", "app.jar"]

@@ -38,6 +38,14 @@
             <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-config</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-bootstrap</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
@@ -218,6 +226,7 @@
                     <excludes>
                         <exclude>org/example/service/exception/**</exclude>
                         <exclude>org/example/service/rest/dto/**</exclude>
+                        <exclude>org/example/controller/TestController*</exclude>
                         <exclude>org/example/SongServiceApplication.java</exclude>
                     </excludes>
                 </configuration>
