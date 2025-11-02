@@ -17,13 +17,16 @@ public class ResourceEventHandlerImpl implements ResourceEventHandler {
     private final ResourceServiceClient resourceServiceClient;
     private final MetadataExtractor metadataExtractor;
     private final SongServiceClient songServiceClient;
+    private final MessagePublisher<ResourceEvent> messagePublisher;
 
     public ResourceEventHandlerImpl(ResourceServiceClient resourceServiceClient,
                                     MetadataExtractor metadataExtractor,
-                                    SongServiceClient songServiceClient) {
+                                    SongServiceClient songServiceClient,
+                                    MessagePublisher<ResourceEvent> messagePublisher) {
         this.resourceServiceClient = resourceServiceClient;
         this.metadataExtractor = metadataExtractor;
         this.songServiceClient = songServiceClient;
+        this.messagePublisher = messagePublisher;
     }
 
     @Retryable(
@@ -41,6 +44,8 @@ public class ResourceEventHandlerImpl implements ResourceEventHandler {
         metadata.setId(event.getResourceId());
         log.debug("Extract metadata: {}", metadata);
         songServiceClient.saveSongMetadata(metadata);
+
+        messagePublisher.publishMessage(event);
     }
 
     @Recover

@@ -16,10 +16,14 @@ public class Resource {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "file_url")
-    private String fileUrl;
+    @Embedded
+    private FileUrl fileUrl;
 
-    public Resource(String fileUrl) {
+    @Column(name = "file_state")
+    @Enumerated(EnumType.STRING)
+    private FileState fileState;
+
+    public Resource(FileUrl fileUrl) {
         this.fileUrl = fileUrl;
     }
 }

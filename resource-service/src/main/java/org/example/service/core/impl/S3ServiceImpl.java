@@ -1,7 +1,7 @@
 package org.example.service.core.impl;
 
 import org.example.service.core.S3Service;
-import org.springframework.beans.factory.annotation.Value;
+import org.example.service.dto.FileUrl;
 import org.springframework.stereotype.Service;
 import software.amazon.awssdk.core.ResponseBytes;
 import software.amazon.awssdk.core.sync.RequestBody;
@@ -9,62 +9,62 @@ import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.*;
 
 import java.net.URL;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 public class S3ServiceImpl implements S3Service {
     private final S3Client s3Client;
-    private final String bucketName;
 
-    private final String s3EndPoint;
-
-    public S3ServiceImpl(S3Client s3Client,
-                         @Value("${aws.s3.bucket-name}") String bucketName,
-                         @Value("${aws.s3.endpoint}")String s3EndPoint) {
+    public S3ServiceImpl(S3Client s3Client) {
         this.s3Client = s3Client;
-        this.bucketName = bucketName;
-        this.s3EndPoint = s3EndPoint;
     }
 
     @Override
-    public String uploadFile(String key, byte[] data) {
+    public FileUrl uploadFile(FileUrl fileUrl, byte[] data) {
         s3Client.putObject(
                 PutObjectRequest.builder()
-                        .bucket(bucketName)
-                        .key(key)
+                        .bucket(fileUrl.getBucketName())
+                        .key(fileUrl.getKey())
                         .build(),
-                RequestBody.fromBytes(data)
-        );
+                RequestBody.fromBytes(data));
 
         URL url = s3Client.utilities()
-                .getUrl(b -> b.bucket(bucketName).key(key));
+                .getUrl(b -> b.bucket(fileUrl.getBucketName()).key(fileUrl.getKey()));
 
-        return url.toString();
+        return FileUrl.copy(fileUrl, url.toString());
     }
 
     @Override
-    public byte[] downloadFile(String keyOrUrl) {
-        String key = extractKey(keyOrUrl);
+    public byte[] downloadFile(FileUrl fileUrl) {
 
         ResponseBytes<GetObjectResponse> response = s3Client.getObjectAsBytes(
                 GetObjectRequest.builder()
-                        .bucket(bucketName)
-                        .key(key)
+                        .bucket(fileUrl.getBucketName())
+                        .key(fileUrl.getKey())
                         .build()
         );
         return response.asByteArray();
     }
 
     @Override
-    public void deleteAll(List<String> keysToDelete) {
-        List<ObjectIdentifier> objects = keysToDelete.stream()
-                .map(this::extractKey)
-                .map(key -> ObjectIdentifier.builder().key(key).build())
-                .collect(Collectors.toList());
+    public void deleteAll(List<FileUrl> fileUrls) {
 
+        Map<String, Set<ObjectIdentifier>> bucketToObjects = fileUrls.stream()
+                .collect(Collectors.toMap(FileUrl::getBucketName,
+                        fileUrl -> Set.of(ObjectIdentifier.builder().key(fileUrl.getKey()).build()),
+                        (a, b) -> {
+                            Set<ObjectIdentifier> keys = new HashSet<>(a);
+                            keys.addAll(b);
+                            return keys;
+                        }));
+
+        bucketToObjects.forEach(this::deleteObjectsFromBucket);
+    }
+
+    private void deleteObjectsFromBucket(String bucketName, Set<ObjectIdentifier> objectIdentifiers) {
         Delete delete = Delete.builder()
-                .objects(objects)
+                .objects(objectIdentifiers)
                 .build();
 
         DeleteObjectsRequest request = DeleteObjectsRequest.builder()
@@ -73,19 +73,5 @@ public class S3ServiceImpl implements S3Service {
                 .build();
 
         s3Client.deleteObjects(request);
-    }
-
-
-    private String extractKey(String fileUrl) {
-        String prefix = s3EndPoint;
-        if (!prefix.endsWith("/")) {
-            prefix += "/";
-        }
-        prefix += bucketName + "/";
-
-        if (fileUrl.startsWith(prefix)) {
-            return fileUrl.substring(prefix.length());
-        }
-        return fileUrl;
     }
 }

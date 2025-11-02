@@ -218,7 +218,6 @@
                     <excludes>
                         <exclude>org/example/service/exception/**</exclude>
                         <exclude>org/example/service/rest/dto/**</exclude>
-                        <exclude>org/example/SongServiceApplication.java</exclude>
                     </excludes>
                 </configuration>
                 <executions>

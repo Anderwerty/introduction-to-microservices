@@ -8,7 +8,7 @@ import java.util.UUID;
 @Component
 public class RandomKeyGenerator implements KeyGenerator {
     @Override
-    public String generateKey() {
-        return UUID.randomUUID().toString();
+    public String generateKey(String basePath) {
+        return basePath + "/" + UUID.randomUUID();
     }
 }
