@@ -2,6 +2,7 @@ package org.example.config;
 
 import org.apache.tika.parser.mp3.Mp3Parser;
 import org.apache.tika.sax.BodyContentHandler;
+import org.slf4j.MDC;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -63,6 +64,14 @@ public class ApplicationConfig {
     @LoadBalanced
     public RestTemplate storageServiceRestTemplate(ResponseErrorHandler responseErrorHandler){
         RestTemplate restTemplate = new RestTemplate();
+
+        restTemplate.getInterceptors().add((request, body, execution) -> {
+            String traceId = MDC.get("trace-id");
+            if (traceId != null) {
+                request.getHeaders().add("trace-id", traceId);
+            }
+            return execution.execute(request, body);
+        });
         restTemplate.setErrorHandler(responseErrorHandler);
 
         return restTemplate;

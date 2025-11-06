@@ -1,5 +1,6 @@
 package org.example.service.client;
 
+import io.opentelemetry.api.trace.Span;
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.example.entity.FileState;
@@ -30,13 +31,13 @@ public class ResourcePermanentEventHandlerImpl implements ResourceEventHandler {
     @Override
     @Transactional
     public void handle(ResourceEvent event) {
+        String traceId = Span.current().getSpanContext().getTraceId();
+        log.info("TraceID: {} - Received event: {}", traceId, event);
         log.debug(" Received event: {}", event);
 
 
         Resource resource = resourceRepository.findById(event.getResourceId())
                 .orElseThrow(ResourceNotFoundException::new);
-
-        System.out.println("***** old resource:" +resource);
 
 
         resource.setFileState(FileState.PERMANENT);
@@ -77,8 +78,6 @@ public class ResourcePermanentEventHandlerImpl implements ResourceEventHandler {
         resource.getFileUrl().setBucketName(savedFileUrl.getBucketName());
         resource.getFileUrl().setKey(savedFileUrl.getKey());
         resource.getFileUrl().setFullUrl(savedFileUrl.getFullUrl());
-
-        System.out.println("***** new resource:" +resource);
 
         resourceRepository.save(resource);
     }

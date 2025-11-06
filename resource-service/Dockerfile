@@ -9,7 +9,10 @@ RUN mvn clean package -Dmaven.test.skip=true
 FROM --platform=linux/amd64 eclipse-temurin:17-jre-alpine-3.21
 WORKDIR /app
 RUN apk add --no-cache curl
+ARG OTEL_AGENT_VERSION=2.21.0
+RUN curl -L https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/download/v${OTEL_AGENT_VERSION}/opentelemetry-javaagent.jar \
+    -o opentelemetry-javaagent.jar
 COPY --from=build /app/target/*.jar app.jar
 EXPOSE 8081
 
-CMD ["java", "-jar", "app.jar"]
+CMD ["java", "-javaagent:opentelemetry-javaagent.jar", "-Dotel.java.logs.numCapturedBeforeInstall=1000", "-jar", "app.jar"]

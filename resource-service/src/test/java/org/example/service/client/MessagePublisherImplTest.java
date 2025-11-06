@@ -7,6 +7,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.amqp.core.MessagePostProcessor;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -35,7 +36,7 @@ class MessagePublisherImplTest {
         messageClient.publishMessage(message);
 
         ArgumentCaptor<ResourceEvent> captor = ArgumentCaptor.forClass(ResourceEvent.class);
-        verify(rabbitTemplate).convertAndSend(eq(EXCHANGE), eq(RESOURCE_MUSIC), captor.capture());
+        verify(rabbitTemplate).convertAndSend(eq(EXCHANGE), eq(RESOURCE_MUSIC), captor.capture(), any(MessagePostProcessor.class));
 
         ResourceEvent capturedMessage = captor.getValue();
         assertEquals(SONG_ID, capturedMessage.getResourceId());
