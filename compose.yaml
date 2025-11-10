@@ -105,7 +105,7 @@ services:
       test: ["CMD", "rabbitmq-diagnostics", "status"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 15
     networks:
       - default
       - logging
@@ -126,7 +126,26 @@ services:
       test: [ "CMD", "curl", "-fsS", "http://localhost:8888/actuator/health" ]
       interval: 10s
       timeout: 5s
+      retries: 20
+    networks:
+      - default
+      - logging
+
+  auth-server:
+    build: ./auth-server
+    platform: linux/arm64
+    ports:
+      - "8090:8090"
+    environment:
+      AUTH_SERVER_CLIENT_ID: ${AUTH_SERVER_CLIENT_ID}
+      AUTH_SERVER_CLIENT_SECRET: ${AUTH_SERVER_CLIENT_SECRET}
+      AUTH_SERVER_JWKS_URI: ${AUTH_SERVER_JWKS_URI}
+    healthcheck:
+      test: [ "CMD", "curl", "-fsS", "http://localhost:8090/actuator/health" ]
+      interval: 10s
+      timeout: 5s
       retries: 5
+      start_period: 40s
     networks:
       - default
       - logging
@@ -144,8 +163,6 @@ services:
       localstack:
         condition: service_healthy
       rabbitmq:
-        condition: service_healthy
-      config-server:
         condition: service_healthy
     environment:
       SPRING_DATASOURCE_URL: ${RESOURCE_DB_URL}
@@ -169,10 +186,10 @@ services:
       OTEL_METRICS_EXPORTER: none
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://localhost:8081/actuator/health"]
-      interval: 10s
+      interval: 15s
       timeout: 5s
-      retries: 5
-      start_period: 30s
+      retries: 15
+      start_period: 40s
     networks:
       - default
       - logging
@@ -202,8 +219,8 @@ services:
       test: ["CMD", "curl", "-fsS", "http://localhost:8082/actuator/health"]
       interval: 10s
       timeout: 5s
-      retries: 5
-      start_period: 30s
+      retries: 10
+      start_period: 40s
     networks:
       - default
       - logging
@@ -222,8 +239,6 @@ services:
         condition: service_healthy
       eureka-service:
         condition: service_healthy
-      config-server:
-        condition: service_healthy
     environment:
       EUREKA_SERVICE_URL: ${EUREKA_SERVICE_URL}
       RABBITMQ_USER: ${RABBITMQ_USER}
@@ -241,7 +256,7 @@ services:
       test: ["CMD", "curl", "-fsS", "http://localhost:8083/actuator/health"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 15
       start_period: 60s
     networks:
       - default
@@ -286,8 +301,8 @@ services:
       test: [ "CMD", "curl", "-fsS", "http://localhost:8761/actuator/health" ]
       interval: 20s
       timeout: 10s
-      retries: 5
-      start_period: 10s
+      retries: 10
+      start_period: 20s
     networks:
       - default
       - logging
@@ -302,6 +317,7 @@ services:
         condition: service_healthy
     environment:
       EUREKA_SERVICE_URL: ${EUREKA_SERVICE_URL}
+      AUTH_SERVER_URL: ${AUTH_SERVER_URL}
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://localhost:8080/actuator/health"]
       interval: 10s
@@ -311,7 +327,6 @@ services:
       - default
       - logging
 
-  # === LOGGING STACK ===
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.15.3
     container_name: elasticsearch
@@ -329,9 +344,9 @@ services:
       - logging
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:9200 || exit 1"]
-      interval: 10s
+      interval: 30s
       timeout: 10s
-      retries: 5
+      retries: 20
 
   kibana:
     image: docker.elastic.co/kibana/kibana:8.15.3
@@ -392,7 +407,7 @@ services:
   keycloak:
     image: quay.io/keycloak/keycloak:21.1.1
     platform: linux/arm64
-    command: ["start-dev", "--import-realm", "--http-port=8088"]
+    command: ["start-dev", "--import-realm", "--http-port=8088", "--spi-events-listener-vertx-blocked-thread-checker-warning-threshold=5000"]
     environment:
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN_USER:-admin}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
@@ -406,7 +421,7 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - default
+      - logging
 
 volumes:
   es_data:
