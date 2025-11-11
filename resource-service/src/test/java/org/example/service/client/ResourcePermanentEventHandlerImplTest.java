@@ -83,7 +83,7 @@ class ResourcePermanentEventHandlerImplTest {
 
         assertEquals(FileState.PERMANENT, savedResource.getFileState());
         assertEquals("permanent-bucket", savedResource.getFileUrl().getBucketName());
-        assertEquals("https://permanent-bucket/permanent/path/file.txt", savedResource.getFileUrl().getKey());
+        assertEquals("permanent/path/file.txt", savedResource.getFileUrl().getKey());
     }
 
     @Test

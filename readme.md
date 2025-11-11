@@ -139,3 +139,39 @@ public class FileUploadE2ETest {
 * **Component/contract tests:** ensure business scenarios and service contracts are respected.
 * **End-to-end tests:** validate full flows as a user would experience them.
 * **Coverage monitoring:** JaCoCo ensures at least 80% of classes are covered, following the Pareto principle.
+
+
+curl -X PUT "http://localhost:9200/traces-otel-2025.11.04" -H 'Content-Type: application/json' -d '{
+"mappings": {
+"properties": {
+"traceId": { "type": "keyword" },
+"spanId": { "type": "keyword" },
+"name": { "type": "text" },
+"timestamp": { "type": "date", "format": "epoch_millis" },
+"service": {
+"properties": {
+"name": { "type": "keyword" }
+}
+}
+}
+}
+}'
+
+
+curl -X PUT "http://localhost:9200/_index_template/traces-otel-template" -H 'Content-Type: application/json' -d '{
+"index_patterns": ["traces-otel-*"],
+"template": {
+"mappings": {
+"dynamic": true,
+"properties": {
+"traceId": { "type": "keyword" },
+"spanId": { "type": "keyword" },
+"name": { "type": "text" },
+"timestamp": { "type": "date", "format": "epoch_millis" },
+"service": { "properties": { "name": { "type": "keyword" } } }
+}
+}
+}
+}'
+
+

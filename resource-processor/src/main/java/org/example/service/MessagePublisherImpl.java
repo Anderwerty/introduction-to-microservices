@@ -24,6 +24,7 @@ public class MessagePublisherImpl implements MessagePublisher<ResourceEvent> {
 
     @Override
     public void publishMessage(ResourceEvent message){
+
         amqpTemplate.convertAndSend(exchange, routingkey, message);
     }
 }

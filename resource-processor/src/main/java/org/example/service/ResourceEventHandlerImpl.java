@@ -1,5 +1,6 @@
 package org.example.service;
 
+import io.opentelemetry.api.trace.Span;
 import lombok.extern.log4j.Log4j2;
 import org.example.service.client.ResourceServiceClient;
 import org.example.service.client.SongServiceClient;
@@ -37,7 +38,8 @@ public class ResourceEventHandlerImpl implements ResourceEventHandler {
     @RabbitListener(queues = "${message.resource.queue.name:}")
     @Override
     public void handle(ResourceEvent event) {
-        log.debug(" Received event: {}", event);
+        String traceId = Span.current().getSpanContext().getTraceId();
+        log.info("TraceID: {} - Received event: {}", traceId, event);
 
         byte[] resourceData = resourceServiceClient.getResourceData(event.getResourceId());
         SongMetadataDto metadata = metadataExtractor.extract(resourceData);
