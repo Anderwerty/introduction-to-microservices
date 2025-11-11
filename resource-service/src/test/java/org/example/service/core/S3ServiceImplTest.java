@@ -1,13 +1,11 @@
 package org.example.service.core;
 
+import org.example.service.dto.FileUrl;
 import org.example.service.core.impl.S3ServiceImpl;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import software.amazon.awssdk.core.ResponseBytes;
@@ -25,6 +23,7 @@ import java.util.stream.Stream;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -33,41 +32,38 @@ import static org.mockito.Mockito.when;
 class S3ServiceImplTest {
     private static final String BUCKET_NAME = "my-bucket";
 
-    private static final String S3_END_POINT = "http://localhost:4566";
-
     @Mock
     private S3Client s3Client;
 
     @Mock
     private S3Utilities s3Utilities;
 
+    @InjectMocks
     private S3ServiceImpl s3Service;
-
-    @BeforeEach
-    void setUp() {
-        this.s3Service = new S3ServiceImpl(s3Client, BUCKET_NAME, S3_END_POINT);
-    }
 
     @Test
     void uploadFileShouldPutObjectAndReturnUrl() throws MalformedURLException {
         byte[] data = "music 1".getBytes();
         String key = "resource_id";
-        URL expectedUrl = new URL("http://localhost:4566/" + BUCKET_NAME + "/" + key);
+        URL url = new URL("https://localhost:4566/resource_id");
 
         when(s3Client.utilities()).thenReturn(s3Utilities);
-        when(s3Utilities.getUrl(any(Consumer.class))).thenReturn(expectedUrl);
+        when(s3Utilities.getUrl(any(Consumer.class))).thenReturn(url);
 
-        String result = s3Service.uploadFile(key, data);
+        FileUrl fileUrl = FileUrl.builder()
+                .bucketName(BUCKET_NAME)
+                .key(key)
+                .build();
+        s3Service.uploadFile(fileUrl, data);
 
         ArgumentCaptor<PutObjectRequest> putReqCaptor = ArgumentCaptor.forClass(PutObjectRequest.class);
         ArgumentCaptor<RequestBody> bodyCaptor = ArgumentCaptor.forClass(RequestBody.class);
         verify(s3Client).putObject(putReqCaptor.capture(), bodyCaptor.capture());
 
         PutObjectRequest actualRequest = putReqCaptor.getValue();
-        assertThat(actualRequest.bucket(), is(BUCKET_NAME));
-        assertThat(actualRequest.key(), is(key));
-
-        assertThat(result, is(expectedUrl.toString()));
+        assertAll(
+                () -> assertThat(actualRequest.bucket(), is(BUCKET_NAME)),
+                () -> assertThat(actualRequest.key(), is(key)));
     }
 
     @Test
@@ -79,72 +75,86 @@ class S3ServiceImplTest {
                 ResponseBytes.fromByteArray(GetObjectResponse.builder().build(), expectedData);
 
         when(s3Client.getObjectAsBytes(any(GetObjectRequest.class))).thenReturn(mockResponse);
+        FileUrl fileUrl = FileUrl.builder()
+                .bucketName(BUCKET_NAME)
+                .key(key)
+                .build();
 
-        byte[] result = s3Service.downloadFile(key);
+        byte[] result = s3Service.downloadFile(fileUrl);
 
         assertThat(result, is(expectedData));
 
         ArgumentCaptor<GetObjectRequest> getReqCaptor = ArgumentCaptor.forClass(GetObjectRequest.class);
         verify(s3Client).getObjectAsBytes(getReqCaptor.capture());
-        assertThat(getReqCaptor.getValue().bucket(), is(BUCKET_NAME));
-        assertThat(getReqCaptor.getValue().key(), is(key));
+        assertAll(
+                () -> assertThat(getReqCaptor.getValue().bucket(), is(BUCKET_NAME)),
+                () -> assertThat(getReqCaptor.getValue().key(), is(key)));
     }
 
     @Test
     void downloadFileShouldExtractKeyFromHttpUrl() {
         byte[] expectedData = "file data".getBytes();
         String key = "folder/resource_id";
-        String fullUrl = "https://my-bucket.s3.amazonaws.com/" + key;
 
-        ResponseBytes<GetObjectResponse> mockResponse =
-                ResponseBytes.fromByteArray(GetObjectResponse.builder().build(), expectedData);
+        ResponseBytes<GetObjectResponse> mockResponse = ResponseBytes.fromByteArray(GetObjectResponse.builder().build(),
+                expectedData);
 
         when(s3Client.getObjectAsBytes(any(GetObjectRequest.class))).thenReturn(mockResponse);
+        FileUrl fileUrl = FileUrl.builder()
+                .bucketName(BUCKET_NAME)
+                .key(key)
+                .build();
 
-        byte[] result = s3Service.downloadFile(fullUrl);
+        byte[] result = s3Service.downloadFile(fileUrl);
 
         assertThat(result, is(expectedData));
 
         ArgumentCaptor<GetObjectRequest> getReqCaptor = ArgumentCaptor.forClass(GetObjectRequest.class);
         verify(s3Client).getObjectAsBytes(getReqCaptor.capture());
-        assertThat(getReqCaptor.getValue().bucket(), is(BUCKET_NAME));
-        assertThat(getReqCaptor.getValue().key(), is(fullUrl));
+        assertAll(
+                () -> assertThat(getReqCaptor.getValue().bucket(), is(BUCKET_NAME)),
+                () -> assertThat(getReqCaptor.getValue().key(), is(key)));
     }
 
     @Test
     void downloadFileShouldExtractKeyFromS3Url() {
         byte[] expectedData = "file data".getBytes();
         String key = "folder/resource_id";
-        String fullUrl = "s3://" + BUCKET_NAME + "/" + key;
 
-        ResponseBytes<GetObjectResponse> mockResponse =
-                ResponseBytes.fromByteArray(GetObjectResponse.builder().build(), expectedData);
+        ResponseBytes<GetObjectResponse> mockResponse = ResponseBytes.fromByteArray(GetObjectResponse.builder().build(), expectedData);
 
         when(s3Client.getObjectAsBytes(any(GetObjectRequest.class))).thenReturn(mockResponse);
+        FileUrl fileUrl = FileUrl.builder()
+                .bucketName(BUCKET_NAME)
+                .key(key)
+                .build();
 
-        byte[] result = s3Service.downloadFile(fullUrl);
+        byte[] result = s3Service.downloadFile(fileUrl);
 
         assertThat(result, is(expectedData));
 
         ArgumentCaptor<GetObjectRequest> getReqCaptor = ArgumentCaptor.forClass(GetObjectRequest.class);
         verify(s3Client).getObjectAsBytes(getReqCaptor.capture());
-        assertThat(getReqCaptor.getValue().bucket(), is(BUCKET_NAME));
-        assertThat(getReqCaptor.getValue().key(), is(fullUrl));
+        assertAll(
+                () -> assertThat(getReqCaptor.getValue().bucket(), is(BUCKET_NAME)),
+                () -> assertThat(getReqCaptor.getValue().key(), is(key)));
     }
 
-    @ParameterizedTest
-    @MethodSource("deleteMethodData")
-    void deleteAllShouldCallS3WithCorrectKeys(String endPoint) {
-        List<String> urlsToDelete = List.of(
-                "http://localhost:4566/my-bucket/folder/file1.txt",
-                "http://localhost:4566/my-bucket/file2.txt",
-                "file3.txt"
-        );
+    @Test
+    void deleteAllShouldCallS3WithCorrectKeys() {
+        List<FileUrl> urlsToDelete = Stream.of(
+                        "folder/file1.txt",
+                        "file2.txt",
+                        "file3.txt")
+                .map(key -> FileUrl.builder()
+                        .key(key)
+                        .bucketName(BUCKET_NAME)
+                        .build())
+                .toList();
 
         when(s3Client.deleteObjects(any(DeleteObjectsRequest.class)))
                 .thenReturn(DeleteObjectsResponse.builder().build());
 
-        S3ServiceImpl s3Service = new S3ServiceImpl(s3Client,BUCKET_NAME, endPoint);
         s3Service.deleteAll(urlsToDelete);
 
         ArgumentCaptor<DeleteObjectsRequest> captor = ArgumentCaptor.forClass(DeleteObjectsRequest.class);
@@ -153,20 +163,8 @@ class S3ServiceImplTest {
         DeleteObjectsRequest actualRequest = captor.getValue();
 
         assertThat(actualRequest.bucket(), is(BUCKET_NAME));
-        assertThat(
-                actualRequest.delete().objects()
-                        .stream()
-                        .map(ObjectIdentifier::key)
-                        .toList(),
-                containsInAnyOrder("folder/file1.txt", "file2.txt","file3.txt")
-        );
+        assertThat(actualRequest.delete().objects().stream().map(ObjectIdentifier::key).toList(),
+                containsInAnyOrder("folder/file1.txt", "file2.txt", "file3.txt"));
     }
 
-
-    public static Stream<Arguments> deleteMethodData() {
-        return Stream.of(
-                Arguments.of(S3_END_POINT),
-                Arguments.of(S3_END_POINT+"/")
-        );
-    }
 }

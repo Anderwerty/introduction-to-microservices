@@ -25,6 +25,9 @@ class ResourceEventHandlerImplTest {
     @Mock
     private SongServiceClient songServiceClient;
 
+    @Mock
+    private  MessagePublisher<ResourceEvent> messagePublisher;
+
     @InjectMocks
     private ResourceEventHandlerImpl handler;
 
@@ -42,6 +45,7 @@ class ResourceEventHandlerImplTest {
         verify(resourceServiceClient).getResourceData(event.getResourceId());
         verify(metadataExtractor).extract(resourceData);
         verify(songServiceClient).saveSongMetadata(metadata);
+        verify(messagePublisher).publishMessage(event);
     }
 
     @Test
@@ -56,6 +60,7 @@ class ResourceEventHandlerImplTest {
         verify(resourceServiceClient).getResourceData(event.getResourceId());
         verifyNoInteractions(metadataExtractor);
         verifyNoInteractions(songServiceClient);
+        verifyNoInteractions(messagePublisher);
     }
 
     @Test
@@ -71,6 +76,7 @@ class ResourceEventHandlerImplTest {
         verify(resourceServiceClient).getResourceData(event.getResourceId());
         verify(metadataExtractor).extract(resourceData);
         verifyNoInteractions(songServiceClient);
+        verifyNoInteractions(messagePublisher);
     }
 
     @Test
@@ -88,6 +94,7 @@ class ResourceEventHandlerImplTest {
         verify(resourceServiceClient).getResourceData(event.getResourceId());
         verify(metadataExtractor).extract(resourceData);
         verify(songServiceClient).saveSongMetadata(metadata);
+        verifyNoInteractions(messagePublisher);
     }
 
     private static SongMetadataDto createSongMetadata(int id, String title, String time) {

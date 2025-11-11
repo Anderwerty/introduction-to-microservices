@@ -226,8 +226,7 @@
                     <excludes>
                         <exclude>org/example/service/exception/**</exclude>
                         <exclude>org/example/service/rest/dto/**</exclude>
-                        <exclude>org/example/controller/TestController*</exclude>
-                        <exclude>org/example/SongServiceApplication.java</exclude>
+                        <exclude>org/example/SongServiceApplication.class</exclude>
                     </excludes>
                 </configuration>
                 <executions>

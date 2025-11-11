@@ -37,6 +37,24 @@ services:
       timeout: 5s
       retries: 5
 
+  storage-db:
+    image: postgres:16-alpine
+    platform: linux/arm64
+    restart: always
+    environment:
+      POSTGRES_DB: storage_db
+      POSTGRES_USER: ${STORAGE_DB_USER}
+      POSTGRES_PASSWORD: ${STORAGE_DB_PASSWORD}
+    ports:
+      - "5434:5432"
+    volumes:
+      - ./init-scripts/storage-db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${STORAGE_DB_USER}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   localstack:
     image: localstack/localstack:1.2.0
     platform: linux/arm64
@@ -122,6 +140,9 @@ services:
       RESOURCE_TOPIC_NAME: ${RESOURCE_TOPIC_NAME}
       RESOURCE_ROUTING_KEY: ${RESOURCE_ROUTING_KEY}
       QUEUE_NAME: ${QUEUE_NAME}
+      RESOURCE_SAVED_TOPIC_NAME: ${RESOURCE_SAVED_TOPIC_NAME}
+      RESOURCE_SAVED_ROUTING: ${RESOURCE_SAVED_ROUTING}
+      QUEUE_SAVED_NAME: ${QUEUE_SAVED_NAME}
       RABBITMQ_USER: ${RABBITMQ_USER}
       RABBITMQ_PASS: ${RABBITMQ_PASS}
     healthcheck:
@@ -176,12 +197,42 @@ services:
       EUREKA_SERVICE_URL: ${EUREKA_SERVICE_URL}
       RABBITMQ_USER: ${RABBITMQ_USER}
       RABBITMQ_PASS: ${RABBITMQ_PASS}
+      RESOURCE_TOPIC_NAME: ${RESOURCE_TOPIC_NAME}
+      RESOURCE_ROUTING_KEY: ${RESOURCE_ROUTING_KEY}
+      QUEUE_NAME: ${QUEUE_NAME}
+      RESOURCE_SAVED_TOPIC_NAME: ${RESOURCE_SAVED_TOPIC_NAME}
+      RESOURCE_SAVED_ROUTING: ${RESOURCE_SAVED_ROUTING}
+      QUEUE_SAVED_NAME: ${QUEUE_SAVED_NAME}
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://localhost:8083/actuator/health"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 60s
+
+  storage-service:
+    build: ./storage-service
+    platform: linux/arm64
+    ports:
+      - "8084"
+    depends_on:
+      storage-db:
+        condition: service_healthy
+      eureka-service:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: ${STORAGE_DB_URL}
+      SPRING_DATASOURCE_USERNAME: ${STORAGE_DB_USER}
+      SPRING_DATASOURCE_PASSWORD: ${STORAGE_DB_PASSWORD}
+      EUREKA_SERVICE_URL: ${EUREKA_SERVICE_URL}
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8084/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
   eureka-service:
     build: ./eureka-service-discovery

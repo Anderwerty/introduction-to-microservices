@@ -5,21 +5,27 @@ import org.example.config.ApplicationConfig;
 import org.example.service.client.MessagePublisher;
 import org.example.service.dto.ResourceEvent;
 import org.example.service.dto.SimpleErrorResponse;
+import org.example.service.dto.StorageDetailsResponse;
+import org.example.service.dto.StorageType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.http.HttpMethod;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.client.RestTemplate;
 import software.amazon.awssdk.core.ResponseBytes;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.S3Utilities;
@@ -27,6 +33,7 @@ import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
 
 import java.net.URL;
+import java.util.List;
 import java.util.function.Consumer;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -42,10 +49,14 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.method;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
+import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+        properties = "spring.cloud.loadbalancer.enabled=false")
 @Import(ApplicationConfig.class)
 @AutoConfigureMockMvc
 class ResourceControllerTest {
@@ -67,10 +78,14 @@ class ResourceControllerTest {
     @Value("${song.service.name}")
     private String songServiceName;
 
+    @Autowired
+    @Qualifier("storage.service.rest.template")
+    private RestTemplate restTemplate;
+
     private final ObjectMapper mapper = new ObjectMapper();
 
     @BeforeEach
-    void init(){
+    void init() {
         when(discoveryClient.getInstances(songServiceName)).thenReturn(
                 Collections.singletonList(new ServiceInstance() {
                     @Override
@@ -96,7 +111,7 @@ class ResourceControllerTest {
                     @Override
                     public URI getUri() {
                         try {
-                            return new URI("http", null, "song-service", 8080, "/songs", null, null);
+                            return new URI("http", null, "storage-service", 8080, "/songs", null, null);
                         } catch (URISyntaxException e) {
                             throw new RuntimeException("Invalid URI", e);
                         }
@@ -116,6 +131,7 @@ class ResourceControllerTest {
         ResponseBytes<GetObjectResponse> responseBytes = mock(ResponseBytes.class);
         when(responseBytes.asByteArray()).thenReturn(FILE_BYTES);
         when(s3Client.getObjectAsBytes(any(GetObjectRequest.class))).thenReturn(responseBytes);
+
         mockMvc.perform(get("/resources/" + EXISTED_ID)
                         .contentType("audio/mpeg")
                         .accept(MediaType.APPLICATION_JSON)
@@ -177,7 +193,17 @@ class ResourceControllerTest {
 
     @Test
     void createMetadata() throws Exception {
-       URL url = new URL("http://localhost:4566/dummy-bucket/file");
+        List<StorageDetailsResponse> storages = List.of(
+                new StorageDetailsResponse(1, StorageType.STAGING, "staging-bucket", "staging-files"),
+                new StorageDetailsResponse(2, StorageType.PERMANENT, "permanent-bucket", "permanent-files")
+        );
+        String response = mapper.writeValueAsString(storages);
+        MockRestServiceServer mockServer = MockRestServiceServer.createServer(restTemplate);
+
+        mockServer.expect(requestTo("http://storage-service/storages"))
+                .andExpect(method(HttpMethod.GET))
+                .andRespond(withSuccess(response, MediaType.APPLICATION_JSON));
+        URL url = new URL("http://localhost:4566/dummy-bucket/file");
 
         S3Utilities s3Utilities = mock(S3Utilities.class);
         when(s3Client.utilities()).thenReturn(s3Utilities);

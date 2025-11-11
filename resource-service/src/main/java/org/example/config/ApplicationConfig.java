@@ -15,7 +15,6 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.S3Configuration;
 
-
 import java.net.URI;
 
 @Configuration
@@ -60,9 +59,9 @@ public class ApplicationConfig {
         return new BodyContentHandler();
     }
 
-    @Bean("song.service.rest.template")
+    @Bean("storage.service.rest.template")
     @LoadBalanced
-    public RestTemplate restTemplate(ResponseErrorHandler responseErrorHandler){
+    public RestTemplate storageServiceRestTemplate(ResponseErrorHandler responseErrorHandler){
         RestTemplate restTemplate = new RestTemplate();
         restTemplate.setErrorHandler(responseErrorHandler);
 

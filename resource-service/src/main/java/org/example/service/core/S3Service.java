@@ -1,13 +1,15 @@
 package org.example.service.core;
 
+import org.example.service.dto.FileUrl;
+
 import java.util.List;
 
 public interface S3Service {
 
-    String uploadFile(String key, byte[] data);
+    FileUrl uploadFile(FileUrl fileUrl, byte[] data);
 
-    byte[] downloadFile(String key);
+    byte[] downloadFile(FileUrl fileUrl);
 
 
-    void deleteAll(List<String> keysToDelete);
+    void deleteAll(List<FileUrl> fileUrls);
 }
